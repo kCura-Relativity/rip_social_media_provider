@@ -1,4 +1,5 @@
-﻿packages/
+﻿App.config
+packages/
 *.DotSettings.*
 bin
 Bin
