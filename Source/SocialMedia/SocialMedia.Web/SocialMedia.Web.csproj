@@ -43,6 +43,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="kCura.Relativity.Client">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\kCura.Relativity.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -53,6 +56,21 @@
     </Reference>
     <Reference Include="Relativity.CustomPages">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Custom Pages\Client\Relativity.CustomPages.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Kepler">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Kepler.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.DataContracts">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.DataContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.Interfaces">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.Interfaces.Private">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.Interfaces.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.ServiceProxy">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.ServiceProxy.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -100,6 +118,7 @@
     <Content Include="Scripts\frame-messaging.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-postMessage.js" />
+    <Content Include="Scripts\SocialMediaProvider.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
