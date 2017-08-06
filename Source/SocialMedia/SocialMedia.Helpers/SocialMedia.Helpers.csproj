@@ -40,6 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\IsIdentifier.cs" />
+    <Compile Include="Attributes\MappedField.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
