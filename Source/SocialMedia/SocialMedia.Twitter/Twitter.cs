@@ -51,15 +51,15 @@ namespace SocialMedia.Twitter
         [MappedField(Constants.FieldNames.LikeCount, Constants.FieldNames.LikeCount)]
         public Int32 LikeCount { get; set; }
 
-        public override IDataReader GetData(IEnumerable<SocialMediaModelBase> inputFeed, IEnumerable<String> IDs)
+        public override IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs)
         {
             var dt = new DataTable();
             return dt.CreateDataReader();
         }
 
-        public override IEnumerable<SocialMediaModelBase> DownloadFeed(String options)
+        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(String options)
         {
-            var retVal = new List<SocialMediaModelBase>();
+            var retVal = new Dictionary<string, SocialMediaModelBase>();
             return retVal;
         }
     }
