@@ -49,7 +49,7 @@ namespace SocialMedia.Helpers
             return property.GetCustomAttributes(typeof(K), false).Cast<K>().FirstOrDefault();
         }
 
-        public abstract IDataReader GetData(IEnumerable<SocialMediaModelBase> inputFeed, IEnumerable<String> IDs);
-        public abstract IEnumerable<SocialMediaModelBase> DownloadFeed(String options);
+        public abstract IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs);
+        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(String options);
     }
 }
