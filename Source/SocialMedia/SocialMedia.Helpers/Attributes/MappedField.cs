@@ -9,13 +9,13 @@ namespace SocialMedia.Helpers.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class MappedField : Attribute
     {
-        private string _displayName;
-        private string _fieldIdentifier;
+        public String DisplayName { get; set; }
+        public String FieldIdentifier { get; set; }
 
-        public MappedField(String displayName, string fieldIdentifier)
+        public MappedField(String displayName, String fieldIdentifier)
         {
-            _displayName = displayName;
-            _fieldIdentifier = fieldIdentifier;
+            DisplayName = displayName;
+            FieldIdentifier = fieldIdentifier;
         }
     }
 }
