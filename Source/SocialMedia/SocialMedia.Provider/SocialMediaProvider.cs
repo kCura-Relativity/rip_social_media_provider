@@ -10,6 +10,7 @@ using Relativity.API;
 
 namespace SocialMedia.Provider
 {
+    [kCura.IntegrationPoints.Contracts.DataSourceProvider(SocialMedia.Helpers.Constants.Guids.Provider.SOCIAL_MEDIA_PROVIDER)]
     public class SocialMediaProvider : IDataSourceProvider
     {
         public IHelper Helper;
