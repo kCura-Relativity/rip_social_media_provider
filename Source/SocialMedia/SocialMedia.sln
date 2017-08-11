@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMedia.Helpers.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMedia.Twitter", "SocialMedia.Twitter\SocialMedia.Twitter.csproj", "{F78407CB-BA6E-4D23-9128-CDBC8861CFEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMedia.Twitter.Tests", "SocialMedia.Twitter.Tests\SocialMedia.Twitter.Tests.csproj", "{138C0822-3A48-45C8-8B01-337C7D4E45E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{F78407CB-BA6E-4D23-9128-CDBC8861CFEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F78407CB-BA6E-4D23-9128-CDBC8861CFEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F78407CB-BA6E-4D23-9128-CDBC8861CFEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{138C0822-3A48-45C8-8B01-337C7D4E45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{138C0822-3A48-45C8-8B01-337C7D4E45E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{138C0822-3A48-45C8-8B01-337C7D4E45E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{138C0822-3A48-45C8-8B01-337C7D4E45E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

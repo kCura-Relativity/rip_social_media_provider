@@ -5,11 +5,16 @@ using System.Linq;
 using System.Reflection;
 using kCura.IntegrationPoints.Contracts.Models;
 using SocialMedia.Helpers.Attributes;
+using SocialMedia.Helpers.Interfaces;
+using SocialMedia.Helpers.Models;
 
 namespace SocialMedia.Helpers
 {
     public abstract class SocialMediaModelBase
     {
+        public delegate void RaiseErrorEventHandler(Object sender, String message);
+        public event RaiseErrorEventHandler OnRaiseMessage;
+
         public IEnumerable<FieldEntry> GetFields()
         {
             var retVal = new List<FieldEntry>();
@@ -46,10 +51,19 @@ namespace SocialMedia.Helpers
 
         private K GetAttribute<K>(PropertyInfo property) where K : Attribute
         {
+            // Return an attribute for the property of the specified type
             return property.GetCustomAttributes(typeof(K), false).Cast<K>().FirstOrDefault();
         }
 
         public abstract IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs);
-        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(String options);
+        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo);
+
+        protected virtual void RaiseError(String error)
+        {
+            if (OnRaiseMessage != null)
+            {
+                OnRaiseMessage(this, error);
+            }
+        }
     }
 }

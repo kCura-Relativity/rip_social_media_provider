@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SocialMedia.Helpers;
 using SocialMedia.Helpers.Attributes;
+using SocialMedia.Helpers.Interfaces;
+using SocialMedia.Helpers.Models;
 
 namespace SocialMedia.Helpers.Tests
 {
@@ -30,7 +32,7 @@ namespace SocialMedia.Helpers.Tests
             return dt.CreateDataReader();
         }
 
-        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(String options)
+        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo)
         {
             var retVal = new Dictionary<String, SocialMediaModelBase>();
             return retVal;
