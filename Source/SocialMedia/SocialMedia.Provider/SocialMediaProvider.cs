@@ -6,7 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using kCura.IntegrationPoints.Contracts.Models;
 using kCura.IntegrationPoints.Contracts.Provider;
+using Newtonsoft.Json;
 using Relativity.API;
+using SocialMedia.Helpers;
+using SocialMedia.Helpers.Models;
 
 namespace SocialMedia.Provider
 {
@@ -22,16 +25,19 @@ namespace SocialMedia.Provider
 
         public IEnumerable<FieldEntry> GetFields(string options)
         {
-            /* This method runs on the webserver while users are configuring their integration point.
-             * It return a list of fields for users to map to Relativity objects*/
-            var fieldEntries = new List<FieldEntry>();
+            var logger = Helper.GetLoggerFactory().GetLogger();
+            var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
 
-            /*
-            fieldEntries.Add(new FieldEntry { DisplayName = GlobalConstants.TwitterFields.ID, FieldIdentifier = GlobalConstants.TwitterFields.ID, IsIdentifier = true });
-            fieldEntries.Add(new FieldEntry { DisplayName = GlobalConstants.TwitterFields.TWEET_URL, FieldIdentifier = GlobalConstants.TwitterFields.TWEET_URL, IsIdentifier = false });
-            */
-
-            return fieldEntries;
+            try
+            {
+                var socialMediaSource = GetSocialMediaSource(jobConfig);
+                return socialMediaSource.GetFields();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unable to retrieve fields from social media source type");
+                throw;
+            }
         }
 
         public IDataReader GetData(IEnumerable<FieldEntry> fields, IEnumerable<string> entryIds, string options)
@@ -51,6 +57,24 @@ namespace SocialMedia.Provider
             var dataSource = new DataTable();
             return dataSource.CreateDataReader();
             return dataSource.CreateDataReader();
+        }
+
+        private SocialMediaModelBase GetSocialMediaSource(JobConfiguration config)
+        {
+            SocialMediaModelBase retVal = null;
+            var socialMediaType = (Constants.SocialMediaSources)Enum.Parse(typeof(Constants.SocialMediaSources), config.SocialMediaType.ToUpper());
+   
+            switch (socialMediaType)
+            {
+                case Constants.SocialMediaSources.TWITTER:
+                    retVal = new Twitter.Twitter();
+                    break;
+
+                default:
+                    throw new Exception("Unsupported Social Media Source");
+            }
+
+            return retVal;
         }
     }
 }

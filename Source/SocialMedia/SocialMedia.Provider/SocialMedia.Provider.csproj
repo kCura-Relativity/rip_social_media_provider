@@ -45,6 +45,10 @@
     <Reference Include="kCura.SourceProviderInstaller">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.SourceProviderInstaller.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Relativity.API">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity API\Lib\Relativity.API.dll</HintPath>
     </Reference>
@@ -83,9 +87,14 @@
       <Project>{d9d7fae8-46ae-4b05-9cef-bcf5723670b1}</Project>
       <Name>SocialMedia.Helpers</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SocialMedia.Twitter\SocialMedia.Twitter.csproj">
+      <Project>{f78407cb-ba6e-4d23-9128-cdbc8861cfea}</Project>
+      <Name>SocialMedia.Twitter</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

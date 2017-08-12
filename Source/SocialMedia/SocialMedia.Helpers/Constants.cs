@@ -9,6 +9,15 @@ namespace SocialMedia.Helpers
     public class Constants
     {
         public const Int32 MAX_RETRY_COUNT = 3;
+
+        public enum SocialMediaSources
+        {
+            TWITTER = 0,
+            /* Not Implemented
+            FACEBOOK = 1,
+            LINKEDIN = 2 */
+        }
+
         public class Guids
         {
             public class Provider
