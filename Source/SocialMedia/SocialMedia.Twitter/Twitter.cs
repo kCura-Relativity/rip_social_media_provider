@@ -100,11 +100,9 @@ namespace SocialMedia.Twitter
         public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo)
         {
             var retVal = new Dictionary<String, SocialMediaModelBase>();
-            var twitterHandle = String.Empty;
-            var sinceID = String.Empty;
 
             var bearerToken = GetBearerToken(utility).Result;
-            var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.AccountName, accountInfo.SinceID).Result;
+            var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID).Result;
 
             // Add Tweets to Dictionary
             foreach (var tweet in feed)
@@ -155,7 +153,7 @@ namespace SocialMedia.Twitter
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
                 client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("UTF-8"));
 
-                using (var responseStream = await utility.SendHttpRequest(client, request))
+                using (var responseStream = await utility.SendHttpRequestAsync(client, request))
                 using (var streamReader = new StreamReader(responseStream))
                 using (var reader = new JsonTextReader(streamReader))
                 {
@@ -186,7 +184,7 @@ namespace SocialMedia.Twitter
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
                 client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("UTF-8"));
 
-                using (var responseStream = await utility.SendHttpRequest(client, request))
+                using (var responseStream = await utility.SendHttpRequestAsync(client, request))
                 using (var streamReader = new StreamReader(responseStream))
                 using (var reader = new JsonTextReader(streamReader))
                 {

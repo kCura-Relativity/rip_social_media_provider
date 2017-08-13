@@ -6,10 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using kCura.IntegrationPoints.Contracts.Models;
 using kCura.IntegrationPoints.Contracts.Provider;
+using kCura.Relativity.Client;
+using kCura.Relativity.Client.DTOs;
 using Newtonsoft.Json;
 using Relativity.API;
 using SocialMedia.Helpers;
+using SocialMedia.Helpers.Interfaces;
 using SocialMedia.Helpers.Models;
+using Constants = SocialMedia.Helpers.Constants;
 
 namespace SocialMedia.Provider
 {
@@ -17,25 +21,30 @@ namespace SocialMedia.Provider
     public class SocialMediaProvider : IDataSourceProvider
     {
         public IHelper Helper;
+        public IUtility Utility;
 
         public SocialMediaProvider(IHelper helper)
         {
             Helper = helper;
+            Utility = new Utility();
         }
 
         public IEnumerable<FieldEntry> GetFields(string options)
         {
-            var logger = Helper.GetLoggerFactory().GetLogger();
-            var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
-
             try
             {
+                var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
+                var socialMediaCustodian = Utility.GetSocialMediaCustodianAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.SocialMediaCustodianArtifactID).Result;
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var accountInfo = AssembleAccountInformation(socialMediaCustodian, archivedFeedRDO);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
+                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo);
+                SaveFeed(jobConfig, archivedFeedRDO, feed);
                 return socialMediaSource.GetFields();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unable to retrieve fields from social media source type");
+                LogError(ex, "Unable to retrieve fields from social media source type");
                 throw;
             }
         }
@@ -45,18 +54,45 @@ namespace SocialMedia.Provider
             /* This method is executed on itegration points agents to import the data into Relativity
              * Query your data source from the IDs provided, format it with the columns entered in GetFields()
              * Lastly return it as a dataReader.*/
-
-            var dataSource = new DataTable();
-            return dataSource.CreateDataReader();
+            try
+            {
+                var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var archiveFeed = Utility.DeserializeObjectAsync<Dictionary<String,SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
+                var socialMediaSource = GetSocialMediaSource(jobConfig);
+                return socialMediaSource.GetData(archiveFeed, entryIds);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "Unable to get data");
+                throw;
+            }
         }
 
         public IDataReader GetBatchableIds(FieldEntry identifier, string options)
         {
             /*Return all the IDs of the datasource in a datareader, The IDs will be passed to GetData
              * to allow the data to be processed in batches*/
-            var dataSource = new DataTable();
-            return dataSource.CreateDataReader();
-            return dataSource.CreateDataReader();
+            try
+            {
+                var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var archiveFeed = Utility.DeserializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
+                var dt = new DataTable();
+                dt.Columns.Add(new DataColumn(identifier.FieldIdentifier, typeof(String)));
+
+                foreach (var tweet in archiveFeed)
+                {
+                    dt.Rows.Add(tweet.Key);
+                }
+
+                return dt.CreateDataReader();
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "Unable to get data");
+                throw;
+            }
         }
 
         private SocialMediaModelBase GetSocialMediaSource(JobConfiguration config)
@@ -76,5 +112,53 @@ namespace SocialMedia.Provider
 
             return retVal;
         }
+
+        private AccountInformation AssembleAccountInformation(RDO socialMediaCustodian, RDO archivedFeedRDO)
+        {
+            var retVal = new AccountInformation();
+            
+            retVal.TwitterAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.TWITTER].ValueAsFixedLengthText;
+            retVal.FacebookAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.FACEBOOK].ValueAsFixedLengthText;
+            retVal.LinkedinAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.LINKEDIN].ValueAsFixedLengthText;
+
+            if (archivedFeedRDO != null)
+            {
+                retVal.SinceID = archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.SINCE_ID].ValueAsFixedLengthText;
+            }
+
+            return retVal;
+        }
+
+        private void SaveFeed(JobConfiguration config, RDO archivedFeedRDO, Dictionary<String, SocialMediaModelBase> feed)
+        {
+            try
+            {
+                var sinceID = feed.Last().Key;
+                var serializedFeed = Utility.SerializeObjectAsync(feed);
+                if (archivedFeedRDO == null)
+                {
+                    // Create a new feedROD for this RIP Job
+                    Utility.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobArtifactID, serializedFeed, sinceID).Wait();
+                }
+                else
+                {
+                    // Update existing feedRDO
+                    Utility.UpdateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, archivedFeedRDO.ArtifactID, serializedFeed, sinceID).Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "Error Saving new Feed");
+                throw;
+            }
+        }
+
+        private void LogError(Exception ex, String msg)
+        {
+            var logger = Helper.GetLoggerFactory().GetLogger();
+            logger.LogError(ex, msg);
+        }
+
+  
     }
 }

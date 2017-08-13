@@ -1,14 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
+using kCura.IntegrationPoints.Contracts.Models;
+using kCura.Relativity.Client;
+using kCura.Relativity.Client.DTOs;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using Relativity.API;
+using SocialMedia.Helpers;
+using SocialMedia.Helpers.Interfaces;
 using SocialMedia.Helpers.Models;
 using SocialMedia.Twitter;
+using SocialMedia.Twitter.Tests;
+using Constants = SocialMedia.Helpers.Constants;
 
 namespace SocialMedia.Provider.Tests
 {
@@ -16,20 +25,62 @@ namespace SocialMedia.Provider.Tests
     [TestFixture]
     public class SocialMediaProviderTests
     {
+        public Twitter.Twitter SampleTweet;
+        public Mock<IUtility> MockUtility;
+        public UtilityTestHelper UtilityTestHelper;
+
         Mock<IHelper> MockHelper;
         Mock<ILogFactory> MockLogFactory;
         Mock<IAPILog> MockLogger;
+        Mock<IServicesMgr> MockServicesMgr;
+        Mock<IRSAPIClient> MockRsapiClient;
 
-        [TestFixtureSetUp]
+        RDO SocialMediaCustodian;
+        RDO ArchivedFeed;
+
+        [SetUp]
         public void Init()
         {
             MockHelper = new Mock<IHelper>();
             MockLogFactory = new Mock<ILogFactory>();
             MockLogger = new Mock<IAPILog>();
+            MockServicesMgr = new Mock<IServicesMgr>();
+            MockRsapiClient = new Mock<IRSAPIClient>();
+            UtilityTestHelper = new UtilityTestHelper();
+            MockUtility = UtilityTestHelper.MockUtility;
+            SampleTweet = UtilityTestHelper.SampleTweet;
 
             MockLogFactory.Setup(x => x.GetLogger()).Returns(MockLogger.Object);
             MockHelper.Setup(x => x.GetLoggerFactory()).Returns(MockLogFactory.Object);
+            MockServicesMgr.Setup(x => x.CreateProxy<IRSAPIClient>(It.IsAny<ExecutionIdentity>())).Returns(MockRsapiClient.Object);
 
+            SocialMediaCustodian = new RDO(12345)
+            {
+                Fields = new List<FieldValue>()
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.TWITTER) { Value = "TestTwitterHandle"},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.FACEBOOK) { Value = "TestFaceBookHandle"},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.LINKEDIN) { Value = "TestLinkedinHandle"}
+                }
+            };
+
+            MockUtility.Setup(x => x.GetSocialMediaCustodianAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(SocialMediaCustodian));
+            MockUtility.Setup(x => x.GetFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(ArchivedFeed));
+        }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            UtilityTestHelper = null;
+            SampleTweet = null;
+            ArchivedFeed = null;
+            SocialMediaCustodian = null;
+            MockHelper.ResetCalls();
+            MockLogFactory.ResetCalls();
+            MockLogger.ResetCalls();
+            MockServicesMgr.ResetCalls();
+            MockRsapiClient.ResetCalls();
+            MockUtility.ResetCalls();
         }
 
 
@@ -37,7 +88,10 @@ namespace SocialMedia.Provider.Tests
         public void FieldsAreReturnedForTwitterSource()
         {
             // Arrange
-            var provider = new SocialMediaProvider(MockHelper.Object);
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
             var config = new JobConfiguration()
             {
                 JobArtifactID = 123456,
@@ -52,12 +106,305 @@ namespace SocialMedia.Provider.Tests
             var result = provider.GetFields(configString);
 
             // Assert
-
             foreach (var field in expectedTwitterFields)
             {
                 Assert.IsTrue(result.Where(x => x.DisplayName == field.DisplayName && x.FieldIdentifier == field.FieldIdentifier) != null);
             }
+        }
 
+        [Test]
+        public void FeedRDOisCreatedInsteadOfUpdatedWhenArchiveDoesntExist()
+        {
+            // Arrange
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            ArchivedFeed = null;
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+            // Act
+            provider.GetFields(configString);
+
+            // Assert
+            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
+            MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
+        }
+
+        [Test]
+        public void FeedRDOisUpdatedInsteadOfCreatedWhenArchiveExists()
+        {
+            // Arrange
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            
+            ArchivedFeed = new RDO(12345)
+            {
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
+                }
+            };
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+            // Act
+            provider.GetFields(configString);
+
+            // Assert
+            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
+            MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once);
+        }
+
+        [Test]
+        public void LastTweetIDIsSavedAsSinceIDinCreate()
+        {
+            // Arrange
+            String recordedSinceID = null;
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            ArchivedFeed = null;
+            Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("3") };
+            MockUtility.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
+                .Returns<HttpClient, HttpRequestMessage>((client, msg) =>
+                {
+                    var retVal = UtilityTestHelper.GenerateBearerTokenResponse();
+                    var authType = msg.Headers.Authorization.Scheme;
+                    if (authType == SocialMedia.Twitter.Constants.AuthorizationTypes.BEARER)
+                    {
+                        retVal = UtilityTestHelper.GenerateFeedResponse(tweets);
+                    }
+                    return Task.FromResult(retVal);
+                });
+            MockUtility.Setup(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()))
+            .Callback<IServicesMgr, Int32, Int32, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
+            {
+                recordedSinceID = sinceID;
+            })
+            .Returns(Task.FromResult(true));
+
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+            // Act
+            provider.GetFields(configString);
+
+            // Assert
+            Assert.AreEqual(tweets.Last().ID, recordedSinceID);
+        }
+
+        [Test]
+        public void LastTweetIDIsSavedAsSinceIDInUpdate()
+        {
+            // Arrange
+            String recordedSinceID = null;
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            ArchivedFeed = new RDO(12345)
+            {
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
+                }
+            };
+            Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("3") };
+            MockUtility.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
+                .Returns<HttpClient, HttpRequestMessage>((client, msg) =>
+                {
+                    var retVal = UtilityTestHelper.GenerateBearerTokenResponse();
+                    var authType = msg.Headers.Authorization.Scheme;
+                    if (authType == SocialMedia.Twitter.Constants.AuthorizationTypes.BEARER)
+                    {
+                        retVal = UtilityTestHelper.GenerateFeedResponse(tweets);
+                    }
+                    return Task.FromResult(retVal);
+                });
+            MockUtility.Setup(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()))
+                .Callback<IServicesMgr, Int32, Int32, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
+                {
+                    recordedSinceID = sinceID;
+                })
+                .Returns(Task.FromResult(true));
+
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+            // Act
+            provider.GetFields(configString);
+
+            // Assert
+            Assert.AreEqual(tweets.Last().ID, recordedSinceID);
+        }
+
+        [Test]
+        public void LastTweetIDUsedInDownloadURLWhenArchiveFeedExists()
+        {
+            // Arrange
+            var archiveFeedSinceID = "12345678";
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            ArchivedFeed = new RDO(12345)
+            {
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = archiveFeedSinceID}
+                }
+            };
+
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+            // Act
+            provider.GetFields(configString);
+
+            // Assert
+            var expectedInsert = "&since_id=" + archiveFeedSinceID;
+            var allUrls = String.Join("", UtilityTestHelper.RequestURLs);
+            Assert.IsTrue(allUrls.Contains(expectedInsert));
+        }
+
+        [Test]
+        public void GetDataReturnsDataCorrectly()
+        {
+            // Arrange
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5") };
+            var testFeed = new Dictionary<String, SocialMediaModelBase> { {tweets[0].ID, tweets[0]} , { tweets[1].ID, tweets[1] } };
+            var utility = new Utility();
+            var testFeedString = utility.SerializeObjectAsync(testFeed);
+
+            ArchivedFeed = new RDO(12345)
+            {
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = testFeedString},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
+                }
+            };
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+            
+
+            // Act
+            var result = provider.GetData(new List<FieldEntry>(), new String[] {tweets[0].ID}, configString);
+
+            // Assert
+            using (DataTable dt = new DataTable())
+            {
+                var expectedHashTagFormat = String.Join(Twitter.Constants.MULTIPLE_CHOICE_DELIMITER, tweets[0].HashTags);
+                var expectedMediaURL = string.Format(Twitter.Constants.MEDIA_URL_FORMAT, tweets[0].MediaURL);
+                dt.Load(result);
+                Assert.AreEqual(1, dt.Rows.Count);
+                Assert.AreEqual(tweets[0].ID, dt.Rows[0][Twitter.Constants.FieldNames.ID].ToString());
+                Assert.AreEqual(tweets[0].TwitterURL, dt.Rows[0][Twitter.Constants.FieldNames.TWITTER_URL].ToString());
+                Assert.AreEqual(tweets[0].TwitterHandle, dt.Rows[0][Twitter.Constants.FieldNames.TWITTER_HANDLE].ToString());
+                Assert.AreEqual(tweets[0].Text, dt.Rows[0][Twitter.Constants.FieldNames.TEXT].ToString());
+                Assert.AreEqual(tweets[0].DateCreated.Date.Ticks, ((DateTime)dt.Rows[0][Twitter.Constants.FieldNames.DATE_CREATED]).Date.Ticks);
+                Assert.AreEqual(expectedHashTagFormat, dt.Rows[0][Twitter.Constants.FieldNames.HASH_TAGS].ToString());
+                Assert.AreEqual(tweets[0].HasMedia, Boolean.Parse(dt.Rows[0][Twitter.Constants.FieldNames.HAS_MEDIA].ToString()));
+                Assert.AreEqual(tweets[0].MediaType, dt.Rows[0][Twitter.Constants.FieldNames.MEDIA_TYPE].ToString());
+                Assert.AreEqual(expectedMediaURL, dt.Rows[0][Twitter.Constants.FieldNames.MEDIA_URL].ToString());
+                Assert.AreEqual(tweets[0].IsReplyTo, Boolean.Parse(dt.Rows[0][Twitter.Constants.FieldNames.IS_REPLY_TO].ToString()));
+                Assert.AreEqual(tweets[0].IsReTweet, Boolean.Parse(dt.Rows[0][Twitter.Constants.FieldNames.IS_RETWEET].ToString()));
+                Assert.AreEqual(tweets[0].ReTweetCount, Int32.Parse(dt.Rows[0][Twitter.Constants.FieldNames.RETWEET_COUNT].ToString()));
+                Assert.AreEqual(tweets[0].LikeCount, Int32.Parse(dt.Rows[0][Twitter.Constants.FieldNames.LIKE_COUNT].ToString()));
+            }
+        }
+
+        [Test]
+        public void GetBatchableIDsReturnsAllArchiveIDs()
+        {
+            // Arrange
+            var provider = new SocialMediaProvider(MockHelper.Object)
+            {
+                Utility = MockUtility.Object
+            };
+            Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("7") };
+            var testFeed = new Dictionary<String, SocialMediaModelBase> { { tweets[0].ID, tweets[0] }, { tweets[1].ID, tweets[1] }, { tweets[2].ID, tweets[2] } };
+            var utility = new Utility();
+            var testFeedString = utility.SerializeObjectAsync(testFeed);
+
+            ArchivedFeed = new RDO(12345)
+            {
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = testFeedString},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
+                }
+            };
+            var config = new JobConfiguration()
+            {
+                JobArtifactID = 123456,
+                NumberOfPostsToReveive = 50,
+                SocialMediaType = "Twitter"
+            };
+            var configString = JsonConvert.SerializeObject(config);
+
+
+            // Act
+            var result = provider.GetBatchableIds(new FieldEntry() {FieldIdentifier = "ID"}, configString);
+            var returnedIDs = new List<String>();
+            while (result.Read())
+            {
+                returnedIDs.Add(result["ID"].ToString());
+            }
+
+            // Assert
+            Assert.AreEqual(tweets.Length, returnedIDs.Count);
+            foreach (var tweet in tweets)
+            {
+                Assert.IsTrue(returnedIDs.Contains(tweet.ID));
+            }
         }
     }
 }

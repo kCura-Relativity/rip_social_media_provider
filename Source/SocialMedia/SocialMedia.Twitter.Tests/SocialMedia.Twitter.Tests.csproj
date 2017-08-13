@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="TwitterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UtilityTestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

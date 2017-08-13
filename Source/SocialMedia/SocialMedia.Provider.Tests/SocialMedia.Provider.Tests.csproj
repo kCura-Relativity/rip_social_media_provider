@@ -43,6 +43,9 @@
     <Reference Include="kCura.IntegrationPoints.Domain">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.IntegrationPoints.Domain.dll</HintPath>
     </Reference>
+    <Reference Include="kCura.Relativity.Client">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\kCura.Relativity.Client.dll</HintPath>
+    </Reference>
     <Reference Include="kCura.SourceProviderInstaller">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.SourceProviderInstaller.dll</HintPath>
     </Reference>
@@ -60,6 +63,21 @@
     </Reference>
     <Reference Include="Relativity.API">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity API\Lib\Relativity.API.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Kepler">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Kepler.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.DataContracts">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.DataContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.Interfaces">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.Interfaces.Private">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.Interfaces.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="Relativity.Services.ServiceProxy">
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\Relativity.Services.ServiceProxy.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -86,6 +104,10 @@
     <ProjectReference Include="..\SocialMedia.Provider\SocialMedia.Provider.csproj">
       <Project>{f9a88973-b127-4124-86e1-6eb286afeb76}</Project>
       <Name>SocialMedia.Provider</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocialMedia.Twitter.Tests\SocialMedia.Twitter.Tests.csproj">
+      <Project>{138c0822-3a48-45c8-8b01-337c7d4e45e3}</Project>
+      <Name>SocialMedia.Twitter.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\SocialMedia.Twitter\SocialMedia.Twitter.csproj">
       <Project>{f78407cb-ba6e-4d23-9128-cdbc8861cfea}</Project>

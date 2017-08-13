@@ -8,7 +8,9 @@ namespace SocialMedia.Helpers.Models
 {
     public class AccountInformation
     {
-        public String AccountName { get; set; }
+        public String TwitterAccountHandle { get; set; }
+        public String FacebookAccountHandle { get; set; }
+        public String LinkedinAccountHandle { get; set; }
         public String SinceID { get; set; }
     }
 }

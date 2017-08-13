@@ -13,7 +13,6 @@ using NUnit.Framework;
 using SocialMedia.Helpers;
 using SocialMedia.Helpers.Interfaces;
 using SocialMedia.Helpers.Models;
-using SocialMedia.Twitter.Models;
 
 namespace SocialMedia.Twitter.Tests
 {
@@ -22,24 +21,22 @@ namespace SocialMedia.Twitter.Tests
     {
         public Twitter SampleTweet;
         public Mock<IUtility> MockUtility;
+        public UtilityTestHelper UtilityTestHelper;
 
         [TestFixtureSetUp]
         public void Init()
         {
-            MockUtility = new Mock<IUtility>();
-            SampleTweet = GenerateTweet("1");
+            UtilityTestHelper = new UtilityTestHelper();
+            MockUtility = UtilityTestHelper.MockUtility;
+            SampleTweet = UtilityTestHelper.SampleTweet;
+        }
 
-            MockUtility.Setup(x => x.SendHttpRequest(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
-                .Returns<HttpClient, HttpRequestMessage>((client, msg) =>
-                {
-                    var retVal = GenerateBearerTokenResponse();
-                    var authType = msg.Headers.Authorization.Scheme;
-                    if (authType == Constants.AuthorizationTypes.BEARER)
-                    {
-                        retVal = GenerateFeedResponse(SampleTweet);
-                    }
-                    return Task.FromResult(retVal);
-                });
+        [TestFixtureTearDown]
+        public void Cleanup()
+        {
+            UtilityTestHelper = null;
+            MockUtility = null;
+            SampleTweet = null;
         }
 
         [Test]
@@ -47,8 +44,8 @@ namespace SocialMedia.Twitter.Tests
         {
             // Arrange
             var twitter = new Twitter();
-            var tweet1 = GenerateTweet("1");
-            var tweet2 = GenerateTweet("2");
+            var tweet1 = UtilityTestHelper.GenerateTweet("1");
+            var tweet2 = UtilityTestHelper.GenerateTweet("2");
             var requestedIDs = new List<String> { tweet1.ID};
             var inputFeed = new Dictionary<String, SocialMediaModelBase> { { tweet1.ID, tweet1}, { tweet2.ID, tweet2} };
             
@@ -86,7 +83,7 @@ namespace SocialMedia.Twitter.Tests
             var twitter = new Twitter();
             var accountInfo = new AccountInformation()
             {
-                AccountName = "Microsoft",
+                TwitterAccountHandle = "Microsoft",
                 SinceID = String.Empty
             };
 
@@ -98,7 +95,7 @@ namespace SocialMedia.Twitter.Tests
             Assert.IsTrue(result.ContainsKey(SampleTweet.ID));
             var resultingTweet = (Twitter) result[SampleTweet.ID];
             Assert.AreEqual(SampleTweet.ID, resultingTweet.ID);
-            Assert.AreEqual($"https://twitter.com/{accountInfo.AccountName}/status/{SampleTweet.ID}", resultingTweet.TwitterURL);
+            Assert.AreEqual($"https://twitter.com/{accountInfo.TwitterAccountHandle}/status/{SampleTweet.ID}", resultingTweet.TwitterURL);
             Assert.AreEqual(SampleTweet.TwitterHandle, resultingTweet.TwitterHandle);
             Assert.AreEqual(SampleTweet.Text, resultingTweet.Text);
             Assert.AreEqual(SampleTweet.DateCreated.Date.Ticks, resultingTweet.DateCreated.Date.Ticks);
@@ -112,66 +109,8 @@ namespace SocialMedia.Twitter.Tests
             Assert.AreEqual(SampleTweet.LikeCount, resultingTweet.LikeCount);
         }
 
-        private Twitter GenerateTweet(String ID)
-        {
-            return new Twitter()
-            {
-                ID = ID,
-                TwitterURL = "https://www.twitter.com",
-                TwitterHandle = "Microsoft",
-                Text = "Test Tweet!",
-                DateCreated = DateTime.Now,
-                HashTags = new List<String> { "hash1"},
-                HasMedia = true,
-                MediaType = "Photo",
-                MediaURL = "https://t.co/zg0M8K59qw",
-                IsReplyTo = true,
-                IsReTweet = false,
-                ReTweetCount = 15,
-                LikeCount = 10
-            };
-        }
+        
 
-        private Stream GenerateBearerTokenResponse()
-        {
-            var token = new TwitterBearerToken()
-            {
-                token_type = "bearer",
-                access_token = "AAAAAAAAAAAAAAAAAAAAAJw%2F1gAAAAAAOnzdMMLe5CpHqno9lsPxtT8vwr4%3DCGovTzv9iP37Lvg2WRIjcRzGhbqRMfy33ksEpy1xLrefaqsHB6"
-            };
-            var serializedToken = JsonConvert.SerializeObject(token);
-            return new MemoryStream(Encoding.UTF8.GetBytes(serializedToken));
-        }
-
-        private Stream GenerateFeedResponse(params Twitter[] tweets)
-        {
-            var retVal = String.Empty;
-            var sb = new StringBuilder();
-            foreach (var tweet in tweets)
-            {
-                sb.Append($@"
-                    {{
-                    	""{Constants.TwiiterFeedFieldNames.CREATED_AT}"": ""{tweet.DateCreated}"",
-                    	""{Constants.TwiiterFeedFieldNames.ID}"": {tweet.ID},
-                    	""{Constants.TwiiterFeedFieldNames.TEXT}"": ""{tweet.Text}"",
-                    	""{Constants.TwiiterFeedFieldNames.ENTITIES}"": {{
-                    		""{Constants.TwiiterFeedFieldNames.HASH_TAGS}"": [{{
-                    				""{Constants.TwiiterFeedFieldNames.TEXT}"": ""{tweet.HashTags.FirstOrDefault()}""
-                    			}}
-                    		],
-                    		""{Constants.TwiiterFeedFieldNames.MEDIA}"": [{{
-                    			""{Constants.TwiiterFeedFieldNames.MEDIA_URL}"": ""{tweet.MediaURL}"",
-                    			""{Constants.TwiiterFeedFieldNames.TYPE}"": ""{tweet.MediaType}""
-                    		}}]
-                    	}},
-                    	""{Constants.TwiiterFeedFieldNames.IS_REPLY_TO}"": {tweet.IsReplyTo.ToString().ToLower()},
-                    	""{Constants.TwiiterFeedFieldNames.RETWEET_COUNT}"": {tweet.ReTweetCount},
-                    	""{Constants.TwiiterFeedFieldNames.FAVORITE_COUNT}"": {tweet.LikeCount}
-                    }}
-                    ");
-            }
-            retVal = "[" + sb.ToString() + "]";
-            return new MemoryStream(Encoding.UTF8.GetBytes(retVal));
-        }
+        
     }
 }
