@@ -1,4 +1,5 @@
-﻿App.config
+ConnectionInformation.dll
+App.config
 packages/
 *.DotSettings.*
 bin
