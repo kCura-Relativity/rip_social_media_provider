@@ -32,7 +32,7 @@ namespace SocialMedia.Helpers.Tests
             return dt.CreateDataReader();
         }
 
-        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo)
+        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo, Int32 maxPosts)
         {
             var retVal = new Dictionary<String, SocialMediaModelBase>();
             return retVal;

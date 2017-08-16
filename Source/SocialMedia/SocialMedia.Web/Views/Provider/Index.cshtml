@@ -1,14 +1,51 @@
-﻿<script src="~/Scripts/jquery-1.8.2.js"></script>
+﻿@model SocialMedia.Web.Models.ProviderViewModel
+
+<script src="~/Scripts/jquery-1.8.2.js"></script>
 <script src="~/Scripts/jquery-postMessage.js"></script>
 <script src="~/Scripts/frame-messaging.js"></script>
 <script src="~/Scripts/SocialMediaProvider.js"></script>
 
-@{
-    Layout = null;
-}
-
-<input type="text" name="exampleViewField1" value="" /><br />
-<input type="text" name="exampleViewField2" value="" /><br />
-<input type="text" name="exampleViewField3" value="" /><br />
-<input type="text" name="exampleViewField4" value="" /><br />
-<input type="text" name="exampleViewField5" value="" />
+<div id="_main">
+    <div id="_dynamicTemplate__kCuraScrollingDiv" class="kCuraScrollingDiv edit-view-from-layout cardContainerNoUpperPadding cardContainerWidthAuto editFieldDiv">
+        <div id="_dynamicTemplate__dynamicViewFieldRenderer_templateContainer">
+            <table class="editTable" data-name="Social Media Provider">
+                <tbody>
+                <tr>
+                    <td class="EditTableColumn" colspan="2">
+                        <div class="viewSectionTitle" id="_dynamicTemplate__dynamicViewFieldRenderer_div_0">Social Media Provider
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="editTableColumn" colspan="1">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td class="dynamicEditFieldNameRequired">Social Media Custodian:</td>
+                                <td class="dynamicEditFieldValue">
+                                    @Html.DropDownList("socialMediaCustodian", Model.Custodians, String.Empty, new { @class = "list-box" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="dynamicEditFieldNameRequired">Social Media Source:</td>
+                                <td class="dynamicEditFieldValue">
+                                    @Html.DropDownList("socialMediaSource", Model.SocialMediaSources, String.Empty, new { @class = "list-box" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="dynamicEditFieldNameRequired">Number of Posts to Retrieve:</td>
+                                <td class="dynamicEditFieldValue">
+                                    @Html.TextBox("numberOfPostsToRetreive", SocialMedia.Helpers.Constants.DEFAULT_NUMBER_OF_POSTS_TO_DOWNLOAD)
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        @Html.Hidden("jobIdentifier", Model.JobIdentifier)
+                        @Html.Hidden("workspaceArtifactID", Model.WorkspaceArtifactID)
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

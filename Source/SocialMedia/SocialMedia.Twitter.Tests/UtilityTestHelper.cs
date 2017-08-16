@@ -89,7 +89,7 @@ namespace SocialMedia.Twitter.Tests
                 var tweet = tweets[i];
                 var rawTweet = $@"
                     {{
-                    	""{Constants.TwiiterFeedFieldNames.CREATED_AT}"": ""{tweet.DateCreated}"",
+                    	""{Constants.TwiiterFeedFieldNames.CREATED_AT}"": ""{tweet.DateCreated.ToString(SocialMedia.Twitter.Constants.TWITTER_DATE_TEMPLATE)}"",
                     	""{Constants.TwiiterFeedFieldNames.ID}"": {tweet.ID},
                     	""{Constants.TwiiterFeedFieldNames.TEXT}"": ""{tweet.Text}"",
                     	""{Constants.TwiiterFeedFieldNames.ENTITIES}"": {{}},

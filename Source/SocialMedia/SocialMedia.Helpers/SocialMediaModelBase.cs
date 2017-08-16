@@ -12,7 +12,7 @@ namespace SocialMedia.Helpers
 {
     public abstract class SocialMediaModelBase
     {
-        public delegate void RaiseErrorEventHandler(Object sender, String message);
+        public delegate void RaiseErrorEventHandler(String message, Exception ex);
         public event RaiseErrorEventHandler OnRaiseMessage;
 
         public IEnumerable<FieldEntry> GetFields()
@@ -56,13 +56,13 @@ namespace SocialMedia.Helpers
         }
 
         public abstract IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs);
-        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo);
+        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo, Int32 maxPosts);
 
-        protected virtual void RaiseError(String error)
+        protected virtual void RaiseError(String error, Exception ex)
         {
             if (OnRaiseMessage != null)
             {
-                OnRaiseMessage(this, error);
+                OnRaiseMessage(error, ex);
             }
         }
     }

@@ -1,37 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using kCura.Relativity.Client;
 using Relativity.API;
+using SocialMedia.Helpers;
+using SocialMedia.Helpers.Interfaces;
+using SocialMedia.Web.Models;
 
 namespace SocialMedia.Web.Controllers
 {
-    public class ProviderController : Controller
+    public class ProviderController : AsyncController
     {
-        // GET: Provider
-        public ActionResult Index()
+        
+        public IUtility Utility;
+
+        public ProviderController()
         {
-            var logger = Relativity.CustomPages.ConnectionHelper.Helper().GetLoggerFactory().GetLogger();
-            try
-            {
-                using (var rsapiClient = Relativity.CustomPages.ConnectionHelper.Helper().GetServicesManager().CreateProxy<IRSAPIClient>(ExecutionIdentity.System))
-                {
-                    var randomRDOArtifactID = 123123;
-                    rsapiClient.APIOptions = new APIOptions()
+            Utility = new Utility();
+        }
+ 
+        public async Task<ActionResult> Index()
+        {
+            var helper = Relativity.CustomPages.ConnectionHelper.Helper();
+            var socialMediaSources = Enum.GetNames(typeof(Helpers.Constants.SocialMediaSources))
+                .Select(x => new SelectListItem { Text = x, Value = x }).ToList();
+
+            var custodians = (await Utility.GetAllSocialMediaCustodiansAsync(helper.GetServicesManager(), helper.GetActiveCaseID()))
+                .Select(
+                    x => new SelectListItem()
                     {
-                        WorkspaceID = Relativity.CustomPages.ConnectionHelper.Helper().GetActiveCaseID()
-                    };
-                    var result = rsapiClient.Repositories.RDO.Read(randomRDOArtifactID);
-                }
-            }
-            catch (Exception ex)
+                        Text = x[Helpers.Constants.Guids.Fields.SocialMediaCustodian.NAME].ValueAsFixedLengthText,
+                        Value = x.ArtifactID.ToString()
+                    });
+
+            var model = new ProviderViewModel
             {
-                logger.LogError(ex, "An error occured while loaded the custom page");
-            }
-            
-                return View();
+                WorkspaceArtifactID = helper.GetActiveCaseID(),
+                JobIdentifier = Guid.NewGuid(),
+                Custodians = custodians,
+                SocialMediaSources = socialMediaSources
+            };
+
+            return View(model);
         }
     }
 }

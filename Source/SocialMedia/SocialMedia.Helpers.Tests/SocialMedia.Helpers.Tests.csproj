@@ -35,7 +35,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="kCura.IntegrationPoints.Contracts">
-      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.IntegrationPoints.Contracts.dll</HintPath>
+      <HintPath>..\..\..\..\..\Marlon\kcd\Presentations\2017-RIP Workshop\Integration Points SDK 9.4.158.3\Provider\kCura.IntegrationPoints.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Moq, Version=4.7.99.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.7.99\lib\net45\Moq.dll</HintPath>

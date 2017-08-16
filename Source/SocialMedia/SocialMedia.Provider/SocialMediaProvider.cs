@@ -35,16 +35,17 @@ namespace SocialMedia.Provider
             {
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
                 var socialMediaCustodian = Utility.GetSocialMediaCustodianAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.SocialMediaCustodianArtifactID).Result;
-                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
                 var accountInfo = AssembleAccountInformation(socialMediaCustodian, archivedFeedRDO);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
-                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo);
+                socialMediaSource.OnRaiseMessage += LogError;
+                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo, jobConfig.NumberOfPostsToReveive);
                 SaveFeed(jobConfig, archivedFeedRDO, feed);
                 return socialMediaSource.GetFields();
             }
             catch (Exception ex)
             {
-                LogError(ex, "Unable to retrieve fields from social media source type");
+                LogError("Error while retrieving fields from social media source type", ex);
                 throw;
             }
         }
@@ -57,14 +58,15 @@ namespace SocialMedia.Provider
             try
             {
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
-                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
                 var archiveFeed = Utility.DeserializeObjectAsync<Dictionary<String,SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
+                socialMediaSource.OnRaiseMessage += LogError;
                 return socialMediaSource.GetData(archiveFeed, entryIds);
             }
             catch (Exception ex)
             {
-                LogError(ex, "Unable to get data");
+                LogError("Error while retrieving data", ex);
                 throw;
             }
         }
@@ -76,7 +78,7 @@ namespace SocialMedia.Provider
             try
             {
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
-                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobArtifactID).Result;
+                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
                 var archiveFeed = Utility.DeserializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
                 var dt = new DataTable();
                 dt.Columns.Add(new DataColumn(identifier.FieldIdentifier, typeof(String)));
@@ -90,7 +92,7 @@ namespace SocialMedia.Provider
             }
             catch (Exception ex)
             {
-                LogError(ex, "Unable to get data");
+                LogError("Error while retrieving Batchable IDs", ex);
                 throw;
             }
         }
@@ -116,7 +118,8 @@ namespace SocialMedia.Provider
         private AccountInformation AssembleAccountInformation(RDO socialMediaCustodian, RDO archivedFeedRDO)
         {
             var retVal = new AccountInformation();
-            
+            retVal.Key = ConnectionInformation.Authentication.Twitter.ConsumerKey;
+            retVal.Secret = ConnectionInformation.Authentication.Twitter.ConsumerSecret;
             retVal.TwitterAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.TWITTER].ValueAsFixedLengthText;
             retVal.FacebookAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.FACEBOOK].ValueAsFixedLengthText;
             retVal.LinkedinAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.LINKEDIN].ValueAsFixedLengthText;
@@ -138,7 +141,7 @@ namespace SocialMedia.Provider
                 if (archivedFeedRDO == null)
                 {
                     // Create a new feedROD for this RIP Job
-                    Utility.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobArtifactID, serializedFeed, sinceID).Wait();
+                    Utility.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobIdentifier, serializedFeed, sinceID).Wait();
                 }
                 else
                 {
@@ -148,15 +151,15 @@ namespace SocialMedia.Provider
             }
             catch (Exception ex)
             {
-                LogError(ex, "Error Saving new Feed");
+                LogError("Error Saving new Feed", ex);
                 throw;
             }
         }
 
-        private void LogError(Exception ex, String msg)
+        private void LogError(String message, Exception ex)
         {
             var logger = Helper.GetLoggerFactory().GetLogger();
-            logger.LogError(ex, msg);
+            logger.LogError(ex, message);
         }
 
   

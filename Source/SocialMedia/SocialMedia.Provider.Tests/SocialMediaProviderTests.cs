@@ -65,7 +65,7 @@ namespace SocialMedia.Provider.Tests
             };
 
             MockUtility.Setup(x => x.GetSocialMediaCustodianAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(SocialMediaCustodian));
-            MockUtility.Setup(x => x.GetFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(ArchivedFeed));
+            MockUtility.Setup(x => x.GetFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>())).Returns(() => Task.FromResult(ArchivedFeed));
         }
 
         [TearDown]
@@ -94,7 +94,7 @@ namespace SocialMedia.Provider.Tests
             };
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -123,7 +123,7 @@ namespace SocialMedia.Provider.Tests
             ArchivedFeed = null;
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -133,7 +133,7 @@ namespace SocialMedia.Provider.Tests
             provider.GetFields(configString);
 
             // Assert
-            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
+            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
             MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
         }
 
@@ -150,14 +150,14 @@ namespace SocialMedia.Provider.Tests
             {
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
                 }
             };
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -167,7 +167,7 @@ namespace SocialMedia.Provider.Tests
             provider.GetFields(configString);
 
             // Assert
-            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
+            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
             MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once);
         }
 
@@ -193,8 +193,8 @@ namespace SocialMedia.Provider.Tests
                     }
                     return Task.FromResult(retVal);
                 });
-            MockUtility.Setup(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()))
-            .Callback<IServicesMgr, Int32, Int32, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
+            MockUtility.Setup(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()))
+            .Callback<IServicesMgr, Int32, Guid, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
             {
                 recordedSinceID = sinceID;
             })
@@ -202,7 +202,7 @@ namespace SocialMedia.Provider.Tests
 
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -228,7 +228,7 @@ namespace SocialMedia.Provider.Tests
             {
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
                 }
@@ -254,7 +254,7 @@ namespace SocialMedia.Provider.Tests
 
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -280,7 +280,7 @@ namespace SocialMedia.Provider.Tests
             {
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = "Feed Text Blah Blah Blah"},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = archiveFeedSinceID}
                 }
@@ -288,7 +288,7 @@ namespace SocialMedia.Provider.Tests
 
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -320,14 +320,14 @@ namespace SocialMedia.Provider.Tests
             {
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = testFeedString},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
                 }
             };
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };
@@ -377,14 +377,14 @@ namespace SocialMedia.Provider.Tests
             {
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { ValueAsSingleObject = new kCura.Relativity.Client.DTOs.Artifact(1234)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = testFeedString},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
                 }
             };
             var config = new JobConfiguration()
             {
-                JobArtifactID = 123456,
+                JobIdentifier = Guid.NewGuid(),
                 NumberOfPostsToReveive = 50,
                 SocialMediaType = "Twitter"
             };

@@ -4,36 +4,42 @@
 
     var getModel = function () {
         var model = {
-            exampleViewField1: $('#exampleViewField1').val(),
-            exampleViewField2: $('#exampleViewField2').val(),
-            exampleViewField3: $('#exampleViewField3').val(),
-            exampleViewField4: $('#exampleViewField4').val(),
-            exampleViewField5: $('#exampleViewField5').val()
-        }
+            SocialMediaCustodianArtifactID: $('#socialMediaCustodian').val(),
+            SocialMediaType: $('#socialMediaSource').val(),
+            NumberOfPostsToReveive: $('#numberOfPostsToRetreive').val(),
+            JobIdentifier: $('#jobIdentifier').val(),
+            WorkspaceArtifactID: $('#workspaceArtifactID').val(),
+    }
         return model;
     };
 
     //An event raised when the user has clicked the Next or Save button.
     message.subscribe('submit', function () {
-        //Execute save logic that persists the state.
-        var localModel = getModel();
-        this.publish("saveState", localModel);
+        //Execute save logic that persists the state
+
+        var serializedModel = JSON.stringify(getModel());
+        this.publish("saveState", serializedModel);
         //Communicate to the host page that it to continue.
-        this.publish('saveComplete', localModel);
+        this.publish('saveComplete', serializedModel);
     });
 
     //An event raised when a user clicks the Back button.
     message.subscribe('back', function () {
         //Execute save logic that persists the state.
-        this.publish('saveState', getModel());
+        var serializedModel = JSON.stringify(getModel());
+        this.publish('saveState', serializedModel);
     });
 
     //An event raised when the host page has loaded the current settings page.
     message.subscribe('load', function (model) {
-        $('#exampleViewField1').val(model.exampleViewField1);
-        $('#exampleViewField2').val(model.exampleViewField2);
-        $('#exampleViewField3').val(model.exampleViewField3);
-        $('#exampleViewField4').val(model.exampleViewField4);
-        $('#exampleViewField5').val(model.exampleViewField5);
+        // Set field Value only when model contains value
+        if (model.length > 0 && JSON.parse(model) !== null) {
+            var localModel = JSON.parse(model);
+            $('#socialMediaCustodian').val(localModel.SocialMediaCustodianArtifactID);
+            $('#socialMediaSource').val(localModel.SocialMediaType);
+            $('#numberOfPostsToRetreive').val(localModel.NumberOfPostsToReveive);
+            $('#jobIdentifier').val(localModel.JobIdentifier);
+            $('#workspaceArtifactID').val(localModel.WorkspaceArtifactID);
+        }
     });
 });

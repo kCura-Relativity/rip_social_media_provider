@@ -30,23 +30,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ConnectionInformation">
+      <HintPath>.\ConnectionInformation.dll</HintPath>
+    </Reference>
     <Reference Include="kCura.EventHandler">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Event Handlers\Client\kCura.EventHandler.dll</HintPath>
     </Reference>
     <Reference Include="kCura.IntegrationPoints.Contracts">
-      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.IntegrationPoints.Contracts.dll</HintPath>
+      <HintPath>..\..\..\..\..\Marlon\kcd\Presentations\2017-RIP Workshop\Integration Points SDK 9.4.158.3\Provider\kCura.IntegrationPoints.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="kCura.IntegrationPoints.Domain">
-      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.IntegrationPoints.Domain.dll</HintPath>
+      <HintPath>..\..\..\..\..\Marlon\kcd\Presentations\2017-RIP Workshop\Integration Points SDK 9.4.158.3\Provider\kCura.IntegrationPoints.Domain.dll</HintPath>
     </Reference>
     <Reference Include="kCura.Relativity.Client">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Services API\Client\kCura.Relativity.Client.dll</HintPath>
     </Reference>
     <Reference Include="kCura.SourceProviderInstaller">
-      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Relativity Integration Points SDK 9.5.21.2\sdk\kCura.SourceProviderInstaller.dll</HintPath>
+      <HintPath>..\..\..\..\..\Marlon\kcd\Presentations\2017-RIP Workshop\Integration Points SDK 9.4.158.3\Provider\kCura.SourceProviderInstaller.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Relativity.API">

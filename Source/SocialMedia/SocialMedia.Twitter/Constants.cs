@@ -5,9 +5,9 @@ namespace SocialMedia.Twitter
     public class Constants
     {
         public const String MULTIPLE_CHOICE_DELIMITER = ";";
-        public const Int32 MAXIMUM_TWEET_DOWNLOAD = 50;
-        public const String CONTENT_TYPE = "application/x-www-form-urlencoded;charset=UTF-8";
         public const String MEDIA_URL_FORMAT = @"<img src=""{0}"" height=""200"" />";
+        public const String TWITTER_DATE_TEMPLATE = "ddd MMM dd HH:mm:ss +ffff yyyy";
+
         public class AppConfigKeys
         {
             public const String TWITTER_CONSUMER_KEY = "TwitterConsumerKey";
@@ -17,6 +17,11 @@ namespace SocialMedia.Twitter
         {
             public const String BASIC = "Basic";
             public const String BEARER = "Bearer";
+        }
+        public class FormValues
+        {
+            public const String GRANT_TYPE = "grant_type";
+            public const String CLIENT_CREDENTIALS = "client_credentials";
         }
         public class URLs
         {
@@ -43,7 +48,7 @@ namespace SocialMedia.Twitter
         public class TwiiterFeedFieldNames
         {
             public const String ID = "id";
-            public const String TEXT = "Text";
+            public const String TEXT = "text";
             public const String CREATED_AT = "created_at";
             public const String ENTITIES = "entities";
             public const String MEDIA = "media";

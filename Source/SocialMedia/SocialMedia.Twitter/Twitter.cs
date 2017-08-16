@@ -12,6 +12,8 @@ using SocialMedia.Twitter.Models;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using SocialMedia.Helpers.Models;
 
@@ -19,6 +21,7 @@ namespace SocialMedia.Twitter
 {
     public class Twitter : SocialMediaModelBase
     {
+        #region Fields
         [IsIdentifier]
         [MappedField(Constants.FieldNames.ID, Constants.FieldNames.ID)]
         public String ID { get; set; } = String.Empty;
@@ -58,7 +61,9 @@ namespace SocialMedia.Twitter
 
         [MappedField(Constants.FieldNames.LIKE_COUNT, Constants.FieldNames.LIKE_COUNT)]
         public Int32 LikeCount { get; set; }
+        #endregion
 
+        #region PublicOverriddenMethods
         public override IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs)
         {
             var dt = GenerateDataTable();
@@ -77,9 +82,9 @@ namespace SocialMedia.Twitter
                             dt.Rows.Add(tweet.ID, tweet.TwitterURL, tweet.TwitterHandle, tweet.Text, tweet.DateCreated, FormatHashTags(tweet.HashTags), tweet.HasMedia, tweet.MediaType, FormatMediaURL(tweet.MediaURL), tweet.IsReplyTo, tweet.IsReTweet, tweet.ReTweetCount, tweet.LikeCount);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine(e);
+                        RaiseError(ex.Message, ex);
                         throw;
                     }
                 }
@@ -87,32 +92,41 @@ namespace SocialMedia.Twitter
             return dt.CreateDataReader();
         }
 
-        public String FormatHashTags(IEnumerable<String> hashTags)
+        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo, Int32 maxPosts)
+        {
+            var retVal = new Dictionary<String, SocialMediaModelBase>();
+            try
+            {
+                var bearerToken = RequestBearerToken(utility, accountInfo.Key, accountInfo.Secret).Result;
+                var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID, maxPosts).Result;
+
+                // Add Tweets to Dictionary
+                foreach (var tweet in feed)
+                {
+                    if (!retVal.ContainsKey(tweet.ID))
+                    {
+                        retVal.Add(tweet.ID, tweet);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                RaiseError(ex.Message, ex);
+                throw;
+            }
+
+            return retVal;
+        }
+        #endregion
+
+        #region PrivateMethods
+        private String FormatHashTags(IEnumerable<String> hashTags)
         {
             var retVal = String.Empty;
             if (hashTags != null && hashTags.Any())
             {
                 retVal = String.Join(Constants.MULTIPLE_CHOICE_DELIMITER, hashTags);
             }
-            return retVal;
-        }
-
-        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo)
-        {
-            var retVal = new Dictionary<String, SocialMediaModelBase>();
-
-            var bearerToken = GetBearerToken(utility).Result;
-            var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID).Result;
-
-            // Add Tweets to Dictionary
-            foreach (var tweet in feed)
-            {
-                if (!retVal.ContainsKey(tweet.ID))
-                {
-                    retVal.Add(tweet.ID, tweet);
-                }
-            }
-
             return retVal;
         }
 
@@ -135,21 +149,22 @@ namespace SocialMedia.Twitter
             return retVal;
         }
 
-        private async Task<TwitterBearerToken> GetBearerToken(IUtility utility)
+        private async Task<TwitterBearerToken> RequestBearerToken(IUtility utility, String consumerKey, String consumerSecret)
         {
             TwitterBearerToken retVal = null;
 
             using (var client = new HttpClient())
             {
-                var consumerKey = ConfigurationManager.AppSettings[Constants.AppConfigKeys.TWITTER_CONSUMER_KEY];
-                var consumerSecret = ConfigurationManager.AppSettings[Constants.AppConfigKeys.TWITTER_CONSUMER_SECRET];
                 var twitterToken = String.Concat(consumerKey, ":", consumerSecret);
+                var endcodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(twitterToken));
+                var content = new Dictionary<String, String> { { Constants.FormValues.GRANT_TYPE, Constants.FormValues.CLIENT_CREDENTIALS } };
                 var request = new HttpRequestMessage()
                 {
                     RequestUri = new Uri(Constants.URLs.REQUEST_BEARER_TOKEN),
-                    Method = HttpMethod.Get,
+                    Method = HttpMethod.Post,
+                    Content = new FormUrlEncodedContent(content)
                 };
-                request.Headers.Authorization = new AuthenticationHeaderValue(Constants.AuthorizationTypes.BASIC, twitterToken);
+                request.Headers.Authorization = new AuthenticationHeaderValue(Constants.AuthorizationTypes.BASIC, endcodedToken);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
                 client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("UTF-8"));
 
@@ -168,13 +183,13 @@ namespace SocialMedia.Twitter
             return retVal;
         }
 
-        private async Task<IEnumerable<Twitter>> RequestFeed(IUtility utility, String bearerToken, String twitterHandle, String sinceID)
+        private async Task<IEnumerable<Twitter>> RequestFeed(IUtility utility, String bearerToken, String twitterHandle, String sinceID, Int32 maxPosts)
         {
             var retVal = new List<Twitter>();
-
+           
             using (var client = new HttpClient())
             {
-                var url = FormatFeedURL(twitterHandle, sinceID);
+                var url = FormatFeedURL(twitterHandle, sinceID, maxPosts);
                 var request = new HttpRequestMessage()
                 {
                     RequestUri = new Uri(url),
@@ -203,10 +218,12 @@ namespace SocialMedia.Twitter
             return string.Format(Constants.MEDIA_URL_FORMAT, mediaURL);
         }
 
-        private String FormatFeedURL(String twitterHandle, String sinceID)
+        private String FormatFeedURL(String twitterHandle, String sinceID, Int32 maxPosts)
         {
-            var retVal = String.Format(Constants.URLs.DOWNLOAD_FEED, twitterHandle, Constants.MAXIMUM_TWEET_DOWNLOAD);
-            if(!String.IsNullOrWhiteSpace(sinceID))
+            var max = maxPosts < 1 ? SocialMedia.Helpers.Constants.DEFAULT_NUMBER_OF_POSTS_TO_DOWNLOAD : maxPosts;
+            var retVal = String.Format(Constants.URLs.DOWNLOAD_FEED, twitterHandle, max);
+            
+            if (!String.IsNullOrWhiteSpace(sinceID))
             {
                 retVal = retVal + "&since_id=" +sinceID.Trim();
             }
@@ -230,9 +247,9 @@ namespace SocialMedia.Twitter
                         TwitterURL = $"https://twitter.com/{twitterHandle}/status/{tweetID}",
                         TwitterHandle = twitterHandle,
                         Text = rawTweet[Constants.TwiiterFeedFieldNames.TEXT].ToString(),
-                        DateCreated = DateTime.Parse(rawTweet[Constants.TwiiterFeedFieldNames.CREATED_AT].ToString()),
+                        DateCreated = DateTime.ParseExact(rawTweet[Constants.TwiiterFeedFieldNames.CREATED_AT].ToString(), Constants.TWITTER_DATE_TEMPLATE, new System.Globalization.CultureInfo("en-us")),
                         HasMedia = rawTweet[Constants.TwiiterFeedFieldNames.ENTITIES][Constants.TwiiterFeedFieldNames.MEDIA] != null,
-                        IsReplyTo = !String.IsNullOrEmpty(rawTweet[Constants.TwiiterFeedFieldNames.IS_REPLY_TO].ToString()),
+                        IsReplyTo = rawTweet[Constants.TwiiterFeedFieldNames.IS_REPLY_TO] != null,
                         IsReTweet = rawTweet[Constants.TwiiterFeedFieldNames.RETWEET_STATUS] != null,
                         ReTweetCount = Convert.ToInt32(rawTweet[Constants.TwiiterFeedFieldNames.RETWEET_COUNT]),
                         LikeCount = Convert.ToInt32(rawTweet[Constants.TwiiterFeedFieldNames.FAVORITE_COUNT])
@@ -257,12 +274,12 @@ namespace SocialMedia.Twitter
                 }
                 catch (Exception ex)
                 {
-                    // Log Exception
-                    RaiseError(ex.ToString());
+                    RaiseError("Error parsing tweet: " +rawTweet.ToString(), ex);
                 }
             }
 
             return retVal;
         }
+        #endregion
     }
 }

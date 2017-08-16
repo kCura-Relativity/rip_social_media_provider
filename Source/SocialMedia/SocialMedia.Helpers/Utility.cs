@@ -48,16 +48,50 @@ namespace SocialMedia.Helpers
                     return proxy.Repositories.RDO.ReadSingle(socialMediaCustodianArtifactID);
                 }
             });
-            
         }
 
-        public async Task<RDO> GetFeedRDOAsync(IServicesMgr mgr, Int32 workspaceArtifactID, Int32 jobArtifactID)
+        public async Task<IEnumerable<RDO>> GetAllSocialMediaCustodiansAsync(IServicesMgr mgr, Int32 workspaceArtifactID)
+        {
+            
+            var retVal = new List<RDO>();
+            var query = new Query<RDO>
+            {
+                ArtifactTypeGuid = Constants.Guids.Objects.SOCIAL_MEDIA_CUSTODIAN,
+                Fields = new List<FieldValue>
+                {
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.NAME),
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.TWITTER),
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.FACEBOOK),
+                    new FieldValue(Constants.Guids.Fields.SocialMediaCustodian.LINKEDIN),
+                }
+            };
+
+            await Task.Run(() =>
+            {
+                using (var proxy = mgr.CreateProxy<IRSAPIClient>(ExecutionIdentity.System))
+                {
+                    proxy.APIOptions = new APIOptions() { WorkspaceID = workspaceArtifactID };
+                    var queryResult = proxy.Repositories.RDO.Query(query);
+                    if (queryResult.Success && queryResult.Results.Any())
+                    {
+                        foreach (var result in queryResult.Results)
+                        {
+                            retVal.Add(result.Artifact);
+                        }
+                    }
+                }
+            });
+
+            return retVal;
+        }
+
+        public async Task<RDO> GetFeedRDOAsync(IServicesMgr mgr, Int32 workspaceArtifactID, Guid jobIdentifier)
         {
             RDO retVal = null;
             var query = new Query<RDO>
             {
                 ArtifactTypeGuid = Constants.Guids.Objects.SOCIAL_MEDIA_FEED,
-                Condition = new ObjectCondition(Constants.Guids.Fields.SocialMediaFeed.JOB, ObjectConditionEnum.EqualTo, jobArtifactID),
+                Condition = new TextCondition(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER, TextConditionEnum.EqualTo, jobIdentifier.ToString()),
                 Fields = new List<FieldValue>
                 {
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID),
@@ -82,14 +116,14 @@ namespace SocialMedia.Helpers
             return retVal;
         }
 
-        public async Task CreateFeedRDOAsync(IServicesMgr mgr, Int32 workspaceArtifactID, Int32 jobArtifactID, String serializedFeed, String sinceID)
+        public async Task CreateFeedRDOAsync(IServicesMgr mgr, Int32 workspaceArtifactID, Guid jobIdentifier, String serializedFeed, String sinceID)
         {
             var feedRDO = new RDO
             {
                 ArtifactTypeGuids = new List<Guid> {Constants.Guids.Objects.SOCIAL_MEDIA_FEED },
                 Fields = new List<FieldValue>
                 {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB) { Value = new kCura.Relativity.Client.DTOs.Artifact(jobArtifactID)},
+                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { Value = jobIdentifier.ToString()},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { Value = serializedFeed},
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { Value = sinceID}
                 }

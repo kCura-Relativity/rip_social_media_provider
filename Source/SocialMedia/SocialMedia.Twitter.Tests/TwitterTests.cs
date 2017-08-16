@@ -88,7 +88,7 @@ namespace SocialMedia.Twitter.Tests
             };
 
             // Act
-            var result = twitter.DownloadFeed(MockUtility.Object, accountInfo);
+            var result = twitter.DownloadFeed(MockUtility.Object, accountInfo, 5);
 
             // Assert
             Assert.AreEqual(1, result.Count);

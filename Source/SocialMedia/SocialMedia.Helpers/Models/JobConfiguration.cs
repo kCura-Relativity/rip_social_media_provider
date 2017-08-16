@@ -10,7 +10,7 @@ namespace SocialMedia.Helpers.Models
     {
         public String SocialMediaType { get; set; }
         public Int32 NumberOfPostsToReveive { get; set; }
-        public Int32 JobArtifactID { get; set; }
+        public Guid JobIdentifier { get; set; }
         public Int32 SocialMediaCustodianArtifactID { get; set; }
         public Int32 WorkspaceArtifactID { get; set; }
     }

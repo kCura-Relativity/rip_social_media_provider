@@ -8,7 +8,7 @@ namespace SocialMedia.Helpers
 {
     public class Constants
     {
-        public const Int32 MAX_RETRY_COUNT = 3;
+        public const Int32 DEFAULT_NUMBER_OF_POSTS_TO_DOWNLOAD = 50;
 
         public enum SocialMediaSources
         {
@@ -55,7 +55,7 @@ namespace SocialMedia.Helpers
                 public class SocialMediaFeed
                 {
                     public static Guid NAME = new Guid("93E0C36E-37F4-478D-B8B8-E0CC81B53DE8");
-                    public static Guid JOB = new Guid("7C9B783E-53D6-45BB-A5DE-C026F4932753");
+                    public static Guid JOB_IDENTIFIER = new Guid("55B8BE6C-F739-476B-AA09-67CC51CE1C9B");
                     public static Guid FEED = new Guid("F82576F4-28E5-4CC5-9A8A-95C3D7C8ED16");
                     public static Guid ARTIFACT_ID = new Guid("5C7262C5-7093-423C-A280-4214ABA425B0");
                     public static Guid SINCE_ID = new Guid("F0C8694A-387F-4789-8BF3-54C4A85E340A");
