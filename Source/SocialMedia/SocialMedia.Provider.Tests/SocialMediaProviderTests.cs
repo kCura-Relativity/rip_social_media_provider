@@ -130,7 +130,7 @@ namespace SocialMedia.Provider.Tests
             var configString = JsonConvert.SerializeObject(config);
 
             // Act
-            provider.GetFields(configString);
+            provider.GetBatchableIds(new FieldEntry() {FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID}, configString);
 
             // Assert
             MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
@@ -164,7 +164,7 @@ namespace SocialMedia.Provider.Tests
             var configString = JsonConvert.SerializeObject(config);
 
             // Act
-            provider.GetFields(configString);
+            provider.GetBatchableIds(new FieldEntry() { FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
 
             // Assert
             MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
@@ -172,7 +172,7 @@ namespace SocialMedia.Provider.Tests
         }
 
         [Test]
-        public void LastTweetIDIsSavedAsSinceIDinCreate()
+        public void FirstTweetIDIsSavedAsSinceIDinCreate()
         {
             // Arrange
             String recordedSinceID = null;
@@ -209,14 +209,14 @@ namespace SocialMedia.Provider.Tests
             var configString = JsonConvert.SerializeObject(config);
 
             // Act
-            provider.GetFields(configString);
+            provider.GetBatchableIds(new FieldEntry() { FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
 
             // Assert
-            Assert.AreEqual(tweets.Last().ID, recordedSinceID);
+            Assert.AreEqual(tweets.First().ID, recordedSinceID);
         }
 
         [Test]
-        public void LastTweetIDIsSavedAsSinceIDInUpdate()
+        public void FirstTweetIDIsSavedAsSinceIDInUpdate()
         {
             // Arrange
             String recordedSinceID = null;
@@ -261,14 +261,14 @@ namespace SocialMedia.Provider.Tests
             var configString = JsonConvert.SerializeObject(config);
 
             // Act
-            provider.GetFields(configString);
+            provider.GetBatchableIds(new FieldEntry() { FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
 
             // Assert
-            Assert.AreEqual(tweets.Last().ID, recordedSinceID);
+            Assert.AreEqual(tweets.First().ID, recordedSinceID);
         }
 
         [Test]
-        public void LastTweetIDUsedInDownloadURLWhenArchiveFeedExists()
+        public void SinceIDUsedInDownloadURLWhenArchiveFeedExists()
         {
             // Arrange
             var archiveFeedSinceID = "12345678";
@@ -295,7 +295,7 @@ namespace SocialMedia.Provider.Tests
             var configString = JsonConvert.SerializeObject(config);
 
             // Act
-            provider.GetFields(configString);
+            provider.GetBatchableIds(new FieldEntry() { FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
 
             // Assert
             var expectedInsert = "&since_id=" + archiveFeedSinceID;
@@ -368,20 +368,7 @@ namespace SocialMedia.Provider.Tests
             {
                 Utility = MockUtility.Object
             };
-            Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("7") };
-            var testFeed = new Dictionary<String, SocialMediaModelBase> { { tweets[0].ID, tweets[0] }, { tweets[1].ID, tweets[1] }, { tweets[2].ID, tweets[2] } };
-            var utility = new Utility();
-            var testFeedString = utility.SerializeObjectAsync(testFeed);
-
-            ArchivedFeed = new RDO(12345)
-            {
-                Fields = new List<FieldValue>
-                {
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.JOB_IDENTIFIER) { ValueAsFixedLengthText = Guid.NewGuid().ToString()},
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.FEED) { ValueAsLongText = testFeedString},
-                    new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { ValueAsFixedLengthText = "12345678"}
-                }
-            };
+  
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
@@ -392,19 +379,15 @@ namespace SocialMedia.Provider.Tests
 
 
             // Act
-            var result = provider.GetBatchableIds(new FieldEntry() {FieldIdentifier = "ID"}, configString);
+            var result = provider.GetBatchableIds(new FieldEntry() {FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
             var returnedIDs = new List<String>();
             while (result.Read())
             {
                 returnedIDs.Add(result["ID"].ToString());
             }
 
-            // Assert
-            Assert.AreEqual(tweets.Length, returnedIDs.Count);
-            foreach (var tweet in tweets)
-            {
-                Assert.IsTrue(returnedIDs.Contains(tweet.ID));
-            }
+            Assert.AreEqual(1, returnedIDs.Count);
+            Assert.AreEqual(SampleTweet.ID, returnedIDs.First());
         }
     }
 }

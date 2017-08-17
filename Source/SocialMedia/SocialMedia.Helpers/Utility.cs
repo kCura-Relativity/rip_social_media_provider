@@ -23,15 +23,6 @@ namespace SocialMedia.Helpers
 
             if (response.IsSuccessStatusCode)
             {
-                /*
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var streamReader = new StreamReader(stream))
-                using (var reader = new JsonTextReader(streamReader))
-                {
-                    var serializer = new JsonSerializer();
-                    tokenResponse = serializer.Deserialize<T>(reader);
-                }
-                */
                 retVal =  await response.Content.ReadAsStreamAsync();
             }
   
@@ -128,6 +119,10 @@ namespace SocialMedia.Helpers
                     new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { Value = sinceID}
                 }
             };
+            if (sinceID != null)
+            {
+                feedRDO.Fields.Add(new FieldValue(Constants.Guids.Fields.SocialMediaFeed.SINCE_ID) { Value = sinceID });
+            }
             await Task.Run(() =>
             {
                 using (var proxy = mgr.CreateProxy<IRSAPIClient>(ExecutionIdentity.System))

@@ -64,6 +64,8 @@ namespace SocialMedia.Twitter
         #endregion
 
         #region PublicOverriddenMethods
+
+        public override String LastDownloadedPostID { get; set; }
         public override IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs)
         {
             var dt = GenerateDataTable();
@@ -100,14 +102,21 @@ namespace SocialMedia.Twitter
                 var bearerToken = RequestBearerToken(utility, accountInfo.Key, accountInfo.Secret).Result;
                 var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID, maxPosts).Result;
 
-                // Add Tweets to Dictionary
-                foreach (var tweet in feed)
+                if (feed.Any())
                 {
-                    if (!retVal.ContainsKey(tweet.ID))
+                    // Twiiter feeds are sorted in Descending Order, so subsequent feed requests should start from the first ID of this present feed
+                    LastDownloadedPostID = feed.First().ID;
+
+                    // Add Tweets to Dictionary
+                    foreach (var tweet in feed)
                     {
-                        retVal.Add(tweet.ID, tweet);
+                        if (!retVal.ContainsKey(tweet.ID))
+                        {
+                            retVal.Add(tweet.ID, tweet);
+                        }
                     }
                 }
+                
             }
             catch (Exception ex)
             {
@@ -236,11 +245,14 @@ namespace SocialMedia.Twitter
 
             var rawTweets = JArray.Load(reader);
 
-            foreach (var rawTweet in rawTweets)
+            for (var i = 0; i < rawTweets.Count; i++)
             {
+                JToken rawTweet = null;
                 try
                 {
+                    rawTweet = rawTweets[i];
                     var tweetID = rawTweet[Constants.TwiiterFeedFieldNames.ID].ToString();
+
                     var tweet = new Twitter()
                     {
                         ID = tweetID,
@@ -271,10 +283,16 @@ namespace SocialMedia.Twitter
                     }
 
                     retVal.Add(tweet);
+                    rawTweet = null;
                 }
                 catch (Exception ex)
                 {
-                    RaiseError("Error parsing tweet: " +rawTweet.ToString(), ex);
+                    var errorMsg = "Error parsing tweet";
+                    if (rawTweet != null)
+                    {
+                        errorMsg += ": " + rawTweet.ToString();
+                    }
+                    RaiseError(errorMsg, ex);
                 }
             }
 

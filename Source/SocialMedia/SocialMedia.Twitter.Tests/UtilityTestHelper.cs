@@ -130,7 +130,6 @@ namespace SocialMedia.Twitter.Tests
                 }
             }
             retVal = "[" + sb.ToString() + "]";
-            Console.Out.WriteLine(retVal);
             return new MemoryStream(Encoding.UTF8.GetBytes(retVal));
         }
     }

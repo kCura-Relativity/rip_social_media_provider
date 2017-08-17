@@ -15,6 +15,8 @@ namespace SocialMedia.Helpers
         public delegate void RaiseErrorEventHandler(String message, Exception ex);
         public event RaiseErrorEventHandler OnRaiseMessage;
 
+        public abstract String LastDownloadedPostID { get; set; }
+
         public IEnumerable<FieldEntry> GetFields()
         {
             var retVal = new List<FieldEntry>();

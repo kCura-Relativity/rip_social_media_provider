@@ -109,8 +109,26 @@ namespace SocialMedia.Twitter.Tests
             Assert.AreEqual(SampleTweet.LikeCount, resultingTweet.LikeCount);
         }
 
-        
+        [Test]
+        public void LastPostIDUpdatedAfterFeedDownloaded()
+        {
+            // Arrange
+            var twitter = new Twitter();
+            var accountInfo = new AccountInformation()
+            {
+                TwitterAccountHandle = "Microsoft",
+                SinceID = String.Empty
+            };
 
-        
+            // Act
+            var result = twitter.DownloadFeed(MockUtility.Object, accountInfo, 5);
+
+            // Assert
+            Assert.AreEqual(UtilityTestHelper.SampleTweet.ID, twitter.LastDownloadedPostID);
+        }
+
+
+
+
     }
 }

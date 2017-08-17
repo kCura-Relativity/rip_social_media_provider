@@ -26,6 +26,7 @@ namespace SocialMedia.Helpers.Tests
 
         public String Test { get; set; }
 
+        public override String LastDownloadedPostID { get; set; }
         public override IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs)
         {
             var dt = new DataTable();

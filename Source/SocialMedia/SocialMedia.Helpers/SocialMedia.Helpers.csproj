@@ -76,7 +76,6 @@
     <Compile Include="Models\AccountInformation.cs" />
     <Compile Include="Models\JobConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RSAPI\RsapiQueries.cs" />
     <Compile Include="SocialMediaModelBase.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
