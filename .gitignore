@@ -1,5 +1,5 @@
-*.resx
-*.Designer.cs
+ConnectionInformation.resx
+ConnectionInformation.Designer.cs
 App.config
 packages/
 *.DotSettings.*
