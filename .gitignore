@@ -1,4 +1,4 @@
-ConnectionInformation.dll
+*.resx
 App.config
 packages/
 *.DotSettings.*
