@@ -79,7 +79,7 @@ namespace SocialMedia.Provider
                 var accountInfo = AssembleAccountInformation(socialMediaCustodian, archivedFeedRDO);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
                 socialMediaSource.OnRaiseMessage += LogError;
-                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo, jobConfig.NumberOfPostsToReveive);
+                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo, jobConfig.NumberOfPostsToRetrieve);
                 SaveFeed(jobConfig, archivedFeedRDO, feed, socialMediaSource.LastDownloadedPostID);
 
                 var dt = new DataTable();

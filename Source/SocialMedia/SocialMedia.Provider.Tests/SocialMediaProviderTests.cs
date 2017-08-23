@@ -23,7 +23,7 @@ namespace SocialMedia.Provider.Tests
 {
 
     [TestFixture]
-    public class SocialMediaProviderTests
+    public class SocialMediaProviderTests2
     {
         public Twitter.Twitter SampleTweet;
         public Mock<IUtility> MockUtility;
@@ -95,7 +95,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -124,7 +124,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -158,7 +158,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -203,7 +203,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -255,7 +255,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -289,7 +289,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -328,7 +328,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
@@ -372,7 +372,7 @@ namespace SocialMedia.Provider.Tests
             var config = new JobConfiguration()
             {
                 JobIdentifier = Guid.NewGuid(),
-                NumberOfPostsToReveive = 50,
+                NumberOfPostsToRetrieve = 50,
                 SocialMediaType = "Twitter"
             };
             var configString = JsonConvert.SerializeObject(config);
