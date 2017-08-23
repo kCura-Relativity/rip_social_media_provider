@@ -61,7 +61,7 @@ namespace SocialMedia.Twitter {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Test.
+        ///   Looks up a localized string similar to Test2.
         /// </summary>
         internal static string TwitterConsumerKey {
             get {
@@ -70,7 +70,7 @@ namespace SocialMedia.Twitter {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Test.
+        ///   Looks up a localized string similar to Test2.
         /// </summary>
         internal static string TwitterConsumerSecret {
             get {
