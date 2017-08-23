@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ConnectionInformation">
-      <HintPath>.\ConnectionInformation.dll</HintPath>
-    </Reference>
     <Reference Include="kCura.EventHandler">
       <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Event Handlers\Client\kCura.EventHandler.dll</HintPath>
     </Reference>

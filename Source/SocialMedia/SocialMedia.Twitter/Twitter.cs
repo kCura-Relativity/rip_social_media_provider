@@ -99,7 +99,7 @@ namespace SocialMedia.Twitter
             var retVal = new Dictionary<String, SocialMediaModelBase>();
             try
             {
-                var bearerToken = RequestBearerToken(utility, accountInfo.Key, accountInfo.Secret).Result;
+                var bearerToken = RequestBearerToken(utility, ConnectionInformation.TwitterConsumerKey, ConnectionInformation.TwitterConsumerSecret).Result;
                 var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID, maxPosts).Result;
 
                 if (feed.Any())

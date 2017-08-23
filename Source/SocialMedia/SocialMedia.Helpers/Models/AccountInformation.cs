@@ -8,8 +8,6 @@ namespace SocialMedia.Helpers.Models
 {
     public class AccountInformation
     {
-        public String Key { get; set; }
-        public String Secret { get; set; }
         public String TwitterAccountHandle { get; set; }
         public String FacebookAccountHandle { get; set; }
         public String LinkedinAccountHandle { get; set; }

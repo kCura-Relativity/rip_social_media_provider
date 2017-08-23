@@ -119,8 +119,6 @@ namespace SocialMedia.Provider
         private AccountInformation AssembleAccountInformation(RDO socialMediaCustodian, RDO archivedFeedRDO)
         {
             var retVal = new AccountInformation();
-            retVal.Key = ConnectionInformation.Authentication.Twitter.ConsumerKey;
-            retVal.Secret = ConnectionInformation.Authentication.Twitter.ConsumerSecret;
             retVal.TwitterAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.TWITTER].ValueAsFixedLengthText;
             retVal.FacebookAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.FACEBOOK].ValueAsFixedLengthText;
             retVal.LinkedinAccountHandle = socialMediaCustodian[Constants.Guids.Fields.SocialMediaCustodian.LINKEDIN].ValueAsFixedLengthText;
