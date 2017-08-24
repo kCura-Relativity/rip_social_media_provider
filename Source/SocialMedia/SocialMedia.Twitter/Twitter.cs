@@ -104,7 +104,7 @@ namespace SocialMedia.Twitter
 
                 if (feed.Any())
                 {
-                    // Twiiter feeds are sorted in Descending Order, so subsequent feed requests should start from the first ID of this present feed
+                    // Twitter feeds are sorted in Descending Order, so subsequent feed requests should start from the first ID of this present feed
                     LastDownloadedPostID = feed.First().ID;
 
                     // Add Tweets to Dictionary

@@ -72,7 +72,7 @@ namespace SocialMedia.Provider
              * to allow the data to be processed in batches*/
             try
             {
-                // Retreive information about the current job
+                // Retrieve information about the current job
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
                 var socialMediaCustodian = Utility.GetSocialMediaCustodianAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.SocialMediaCustodianArtifactID).Result;
                 var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
@@ -140,7 +140,7 @@ namespace SocialMedia.Provider
                     var serializedFeed = Utility.SerializeObjectAsync(feed);
                     if (archivedFeedRDO == null)
                     {
-                        // Create a new feedROD for this RIP Job
+                        // Create a new feedRDO for this RIP Job
                         Utility.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobIdentifier, serializedFeed, sinceID).Wait();
                     }
                     else
