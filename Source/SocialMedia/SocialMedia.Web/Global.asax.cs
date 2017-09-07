@@ -1,5 +1,7 @@
-﻿using System.Web.Mvc;
+﻿using System.Web.Http;
+using System.Web.Mvc;
 using System.Web.Routing;
+
 
 namespace SocialMedia.Web
 {
@@ -8,7 +10,8 @@ namespace SocialMedia.Web
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
+	        WebApiConfig.Register(GlobalConfiguration.Configuration);
+			RouteConfig.RegisterRoutes(RouteTable.Routes);
         }
     }
 }
