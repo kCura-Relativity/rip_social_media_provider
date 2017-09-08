@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Relativity.API;
 using SocialMedia.Helpers;
 using SocialMedia.Helpers.Interfaces;
 using SocialMedia.Web.Models;
 
 namespace SocialMedia.Web.Controllers
 {
-    public class ProviderController : AsyncController
+    public class ProviderController : Controller
     {
         
         public IUtility Utility;

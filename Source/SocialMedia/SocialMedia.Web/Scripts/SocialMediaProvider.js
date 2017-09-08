@@ -6,7 +6,7 @@
         var model = {
             SocialMediaCustodianArtifactID: $('#socialMediaCustodian').val(),
             SocialMediaType: $('#socialMediaSource').val(),
-            NumberOfPostsToReveive: $('#numberOfPostsToRetreive').val(),
+            NumberOfPostsToRetrieve: $('#numberOfPostsToRetrieve').val(),
             JobIdentifier: $('#jobIdentifier').val(),
             WorkspaceArtifactID: $('#workspaceArtifactID').val(),
     }
@@ -37,7 +37,7 @@
             var localModel = JSON.parse(model);
             $('#socialMediaCustodian').val(localModel.SocialMediaCustodianArtifactID);
             $('#socialMediaSource').val(localModel.SocialMediaType);
-            $('#numberOfPostsToRetreive').val(localModel.NumberOfPostsToReveive);
+            $('#numberOfPostsToRetrieve').val(localModel.NumberOfPostsToRetrieve);
             $('#jobIdentifier').val(localModel.JobIdentifier);
             $('#workspaceArtifactID').val(localModel.WorkspaceArtifactID);
         }
