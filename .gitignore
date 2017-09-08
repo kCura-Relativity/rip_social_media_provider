@@ -1,3 +1,5 @@
+ConnectionInformation.resx
+ConnectionInformation.Designer.cs
 App.config
 packages/
 *.DotSettings.*
