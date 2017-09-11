@@ -61,7 +61,7 @@ namespace SocialMedia.Twitter {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to xxxxx.
+        ///   Looks up a localized string similar to qWzXstpWAt6sprx8icomkfo4R.
         /// </summary>
         internal static string TwitterConsumerKey {
             get {
@@ -70,7 +70,7 @@ namespace SocialMedia.Twitter {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to xxxxx.
+        ///   Looks up a localized string similar to ea77D96o4RDSN2lMeJJ1AwbftlNS071hNI9E141pBGIhqNTur4.
         /// </summary>
         internal static string TwitterConsumerSecret {
             get {
