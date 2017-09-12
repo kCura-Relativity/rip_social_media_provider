@@ -32,7 +32,7 @@
   <ItemGroup>
     <Reference Include="kCura.IntegrationPoints.Contracts, Version=9.5.21.2, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Integration Points SDK\Provider\kCura.IntegrationPoints.Contracts.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\kCura Corporation\Relativity SDK\Integration Points SDK 9.4.158.3\Provider\kCura.IntegrationPoints.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="kCura.Relativity.Client">
       <HintPath>C:\Program Files\kCura Corporation\Relativity SDK\Services API\Client\kCura.Relativity.Client.dll</HintPath>
