@@ -20,9 +20,9 @@ namespace SocialMedia.Provider
             var socialMediaProvider = new kCura.IntegrationPoints.SourceProviderInstaller.SourceProvider()
             {
                 Name = "Social Media Provider",
-                Url = $"/%applicationpath%/CustomPages/{Helpers.Constants.Guids.Application.SMP_RELATIVITY_APPLICATION}/Provider/",
-				ViewDataUrl = $"/%applicationpath%/CustomPages/{Helpers.Constants.Guids.Application.SMP_RELATIVITY_APPLICATION}/api/View/"
-			};
+                Url = $"/%applicationpath%/CustomPages/{Helpers.Constants.Guids.Application.SMP_RELATIVITY_APPLICATION}/Provider/Index/",
+                ViewDataUrl = $"/%applicationpath%/CustomPages/{Helpers.Constants.Guids.Application.SMP_RELATIVITY_APPLICATION}/Provider/GetViewFields/"
+            };
 
             sourceProviders.Add(new Guid(Helpers.Constants.Guids.Provider.SOCIAL_MEDIA_PROVIDER), socialMediaProvider);
 
