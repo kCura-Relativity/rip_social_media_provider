@@ -20,14 +20,16 @@ namespace SocialMedia.Twitter.Tests
     public class TwitterTests
     {
         public Twitter SampleTweet;
-        public Mock<IUtility> MockUtility;
+	    public Mock<ISerializationHelper> MockSerializationHelper;
+        public Mock<IHttpService> MockHttpService;
         public UtilityTestHelper UtilityTestHelper;
 
         [TestFixtureSetUp]
         public void Init()
         {
             UtilityTestHelper = new UtilityTestHelper();
-            MockUtility = UtilityTestHelper.MockUtility;
+	        MockHttpService = UtilityTestHelper.MockHttpService;
+			MockSerializationHelper = UtilityTestHelper.MockSerializationHelper;
             SampleTweet = UtilityTestHelper.SampleTweet;
         }
 
@@ -35,7 +37,7 @@ namespace SocialMedia.Twitter.Tests
         public void Cleanup()
         {
             UtilityTestHelper = null;
-            MockUtility = null;
+	        MockSerializationHelper = null;
             SampleTweet = null;
         }
 
@@ -88,7 +90,7 @@ namespace SocialMedia.Twitter.Tests
             };
 
             // Act
-            var result = twitter.DownloadFeed(MockUtility.Object, accountInfo, 5);
+            var result = twitter.DownloadFeed(MockHttpService.Object, accountInfo, 5);
 
             // Assert
             Assert.AreEqual(1, result.Count);
@@ -121,7 +123,7 @@ namespace SocialMedia.Twitter.Tests
             };
 
             // Act
-            var result = twitter.DownloadFeed(MockUtility.Object, accountInfo, 5);
+            var result = twitter.DownloadFeed(MockHttpService.Object, accountInfo, 5);
 
             // Assert
             Assert.AreEqual(UtilityTestHelper.SampleTweet.ID, twitter.LastDownloadedPostID);

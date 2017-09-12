@@ -10,21 +10,16 @@ namespace SocialMedia.Web.Controllers
 {
     public class ProviderController : Controller
     {
-        
-        public IUtility Utility;
+		        
+        private ISocialMediaCustodianService SocialMediaCudCustodianService { get; } = new SocialMediaCustodianService();
 
-        public ProviderController()
-        {
-            Utility = new Utility();
-        }
- 
         public async Task<ActionResult> Index()
         {
             var helper = Relativity.CustomPages.ConnectionHelper.Helper();
             var socialMediaSources = Enum.GetNames(typeof(Helpers.Constants.SocialMediaSources))
                 .Select(x => new SelectListItem { Text = x, Value = x }).ToList();
 
-            var custodians = (await Utility.GetAllSocialMediaCustodiansAsync(helper.GetServicesManager(), helper.GetActiveCaseID()))
+            var custodians = (await SocialMediaCudCustodianService.GetAllSocialMediaCustodiansAsync(helper.GetServicesManager(), helper.GetActiveCaseID()))
                 .Select(
                     x => new SelectListItem()
                     {

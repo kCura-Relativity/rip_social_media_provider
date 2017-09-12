@@ -20,13 +20,15 @@ namespace SocialMedia.Provider
     [kCura.IntegrationPoints.Contracts.DataSourceProvider(SocialMedia.Helpers.Constants.Guids.Provider.SOCIAL_MEDIA_PROVIDER)]
     public class SocialMediaProvider : IDataSourceProvider
     {
-        public IHelper Helper;
-        public IUtility Utility;
+        private IHelper Helper;
+	    public IHttpService HttpService { get; internal set; } = new HttpService();
+	    public IFeedRDOService FeedRdoService { get; internal set; } = new FeedRdoService();
+	    public ISerializationHelper SerializationHelper { get; internal set; } = new SerializationHelper();
+	    public ISocialMediaCustodianService SocialMediaCustodianService { get; internal set; } = new SocialMediaCustodianService();
 
         public SocialMediaProvider(IHelper helper)
         {
             Helper = helper;
-            Utility = new Utility();
         }
 
         public IEnumerable<FieldEntry> GetFields(string options)
@@ -53,8 +55,8 @@ namespace SocialMedia.Provider
             try
             {
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
-                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
-                var archiveFeed = Utility.DeserializeObjectAsync<Dictionary<String,SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
+                var archivedFeedRDO = FeedRdoService.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
+                var archiveFeed = SerializationHelper.DeserializeObjectAsync<Dictionary<String,SocialMediaModelBase>>(archivedFeedRDO[Constants.Guids.Fields.SocialMediaFeed.FEED].ValueAsLongText);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
                 socialMediaSource.OnRaiseMessage += LogError;
                 return socialMediaSource.GetData(archiveFeed, entryIds);
@@ -74,12 +76,12 @@ namespace SocialMedia.Provider
             {
                 // Retrieve information about the current job
                 var jobConfig = JsonConvert.DeserializeObject<JobConfiguration>(options);
-                var socialMediaCustodian = Utility.GetSocialMediaCustodianAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.SocialMediaCustodianArtifactID).Result;
-                var archivedFeedRDO = Utility.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
+                var socialMediaCustodian = SocialMediaCustodianService.GetSocialMediaCustodianAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.SocialMediaCustodianArtifactID).Result;
+                var archivedFeedRDO = FeedRdoService.GetFeedRDOAsync(Helper.GetServicesManager(), jobConfig.WorkspaceArtifactID, jobConfig.JobIdentifier).Result;
                 var accountInfo = AssembleAccountInformation(socialMediaCustodian, archivedFeedRDO);
                 var socialMediaSource = GetSocialMediaSource(jobConfig);
                 socialMediaSource.OnRaiseMessage += LogError;
-                var feed = socialMediaSource.DownloadFeed(Utility, accountInfo, jobConfig.NumberOfPostsToRetrieve);
+                var feed = socialMediaSource.DownloadFeed(HttpService, accountInfo, jobConfig.NumberOfPostsToRetrieve);
                 SaveFeed(jobConfig, archivedFeedRDO, feed, socialMediaSource.LastDownloadedPostID);
 
                 var dt = new DataTable();
@@ -137,16 +139,16 @@ namespace SocialMedia.Provider
             {
                 if (feed.Any())
                 {
-                    var serializedFeed = Utility.SerializeObjectAsync(feed);
+                    var serializedFeed = SerializationHelper.SerializeObjectAsync(feed);
                     if (archivedFeedRDO == null)
                     {
                         // Create a new feedRDO for this RIP Job
-                        Utility.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobIdentifier, serializedFeed, sinceID).Wait();
+                        FeedRdoService.CreateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, config.JobIdentifier, serializedFeed, sinceID).Wait();
                     }
                     else
                     {
                         // Update existing feedRDO
-                        Utility.UpdateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, archivedFeedRDO.ArtifactID, serializedFeed, sinceID).Wait();
+                        FeedRdoService.UpdateFeedRDOAsync(Helper.GetServicesManager(), config.WorkspaceArtifactID, archivedFeedRDO.ArtifactID, serializedFeed, sinceID).Wait();
                     }
                 }
             }
