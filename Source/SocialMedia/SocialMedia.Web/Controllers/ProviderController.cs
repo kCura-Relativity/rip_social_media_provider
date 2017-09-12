@@ -55,15 +55,24 @@ namespace SocialMedia.Web.Controllers
         [System.Web.Http.HttpPost]
         public ActionResult GetViewFields()
         {
-            var data = new StreamReader(Request.InputStream).ReadToEnd();
+            var logger = Relativity.CustomPages.ConnectionHelper.Helper().GetLoggerFactory().GetLogger();
             var settings = new List<KeyValuePair<string, string>>();
-            if (data != null)
+            try
             {
-                JToken token = JToken.Parse(data);
-                var jobConfiguration = JsonConvert.DeserializeObject<JobConfiguration>(token.ToString());
-                settings.Add(new KeyValuePair<string, string>("Social media type", jobConfiguration.SocialMediaType));
-                settings.Add(new KeyValuePair<string, string>("Number of posts to retrieve", jobConfiguration.NumberOfPostsToRetrieve.ToString()));
+                if (Request.InputStream != null && Request.InputStream.Length > 0)
+                {
+                    var data = new StreamReader(Request.InputStream).ReadToEnd();
+                    var token = JToken.Parse(data);
+                    var jobConfiguration = JsonConvert.DeserializeObject<JobConfiguration>(token.ToString());
+                    settings.Add(new KeyValuePair<string, string>("Social media type", jobConfiguration.SocialMediaType));
+                    settings.Add(new KeyValuePair<string, string>("Number of posts to retrieve", jobConfiguration.NumberOfPostsToRetrieve.ToString()));
+                }
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unable to parse JSON Input");
+            }
+
             return Json(settings);
         }
 
