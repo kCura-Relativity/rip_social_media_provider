@@ -53,3 +53,6 @@ kCura.RowDataGateway.dll
 Relativity.CustomPages.dll
 kCura.Agent.dll
 kCura.Config.dll
+kCura.SourceProviderInstaller.dll
+kCura.IntegrationPoints.Domain.dll
+kCura.IntegrationPoints.Contracts.dll
