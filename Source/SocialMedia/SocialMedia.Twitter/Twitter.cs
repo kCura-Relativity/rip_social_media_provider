@@ -94,13 +94,13 @@ namespace SocialMedia.Twitter
             return dt.CreateDataReader();
         }
 
-        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo, Int32 maxPosts)
+        public override Dictionary<String, SocialMediaModelBase> DownloadFeed(IHttpService httpService, AccountInformation accountInfo, Int32 maxPosts)
         {
             var retVal = new Dictionary<String, SocialMediaModelBase>();
             try
             {
-                var bearerToken = RequestBearerToken(utility, ConnectionInformation.TwitterConsumerKey, ConnectionInformation.TwitterConsumerSecret).Result;
-                var feed = RequestFeed(utility, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID, maxPosts).Result;
+                var bearerToken = RequestBearerToken(httpService, ConnectionInformation.TwitterConsumerKey, ConnectionInformation.TwitterConsumerSecret).Result;
+                var feed = RequestFeed(httpService, bearerToken.access_token, accountInfo.TwitterAccountHandle, accountInfo.SinceID, maxPosts).Result;
 
                 if (feed.Any())
                 {
@@ -158,7 +158,7 @@ namespace SocialMedia.Twitter
             return retVal;
         }
 
-        private async Task<TwitterBearerToken> RequestBearerToken(IUtility utility, String consumerKey, String consumerSecret)
+        private async Task<TwitterBearerToken> RequestBearerToken(IHttpService httpService, String consumerKey, String consumerSecret)
         {
             TwitterBearerToken retVal = null;
 
@@ -177,7 +177,7 @@ namespace SocialMedia.Twitter
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
                 client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("UTF-8"));
 
-                using (var responseStream = await utility.SendHttpRequestAsync(client, request))
+                using (var responseStream = await httpService.SendHttpRequestAsync(client, request))
                 using (var streamReader = new StreamReader(responseStream))
                 using (var reader = new JsonTextReader(streamReader))
                 {
@@ -192,7 +192,7 @@ namespace SocialMedia.Twitter
             return retVal;
         }
 
-        private async Task<IEnumerable<Twitter>> RequestFeed(IUtility utility, String bearerToken, String twitterHandle, String sinceID, Int32 maxPosts)
+        private async Task<IEnumerable<Twitter>> RequestFeed(IHttpService httpService, String bearerToken, String twitterHandle, String sinceID, Int32 maxPosts)
         {
             var retVal = new List<Twitter>();
            
@@ -208,7 +208,7 @@ namespace SocialMedia.Twitter
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
                 client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("UTF-8"));
 
-                using (var responseStream = await utility.SendHttpRequestAsync(client, request))
+                using (var responseStream = await httpService.SendHttpRequestAsync(client, request))
                 using (var streamReader = new StreamReader(responseStream))
                 using (var reader = new JsonTextReader(streamReader))
                 {

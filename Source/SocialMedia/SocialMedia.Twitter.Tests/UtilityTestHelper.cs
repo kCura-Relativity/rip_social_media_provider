@@ -17,15 +17,15 @@ namespace SocialMedia.Twitter.Tests
     public class UtilityTestHelper
     {
         public Twitter SampleTweet;
-        public Mock<IUtility> MockUtility;
+	    public Mock<IHttpService> MockHttpService = new Mock<IHttpService>();
+		public Mock<ISerializationHelper> MockSerializationHelper = new Mock<ISerializationHelper>();
         public List<String> RequestURLs = new List<string>();
 
         public UtilityTestHelper()
         {
             SampleTweet = GenerateTweet("1");
-            MockUtility = new Mock<IUtility>();
 
-            MockUtility.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
+	        MockHttpService.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
                 .Callback<HttpClient, HttpRequestMessage>((client, msg) =>
                 {
                     RequestURLs.Add(msg.RequestUri.ToString());
@@ -41,10 +41,10 @@ namespace SocialMedia.Twitter.Tests
                     return Task.FromResult(retVal);
                 });
 
-            var utility = new Utility();
-            MockUtility.Setup(x => x.DeserializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(It.IsAny<String>()))
+            var utility = new SerializationHelper();
+            MockSerializationHelper.Setup(x => x.DeserializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(It.IsAny<String>()))
                 .Returns<String>((input) => { return utility.DeserializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(input); });
-            MockUtility.Setup(x => x.SerializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(It.IsAny<Dictionary<String, SocialMediaModelBase>>()))
+            MockSerializationHelper.Setup(x => x.SerializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(It.IsAny<Dictionary<String, SocialMediaModelBase>>()))
                 .Returns<Dictionary<String, SocialMediaModelBase>>((input) => { return utility.SerializeObjectAsync<Dictionary<String, SocialMediaModelBase>>(input); });
 
         }

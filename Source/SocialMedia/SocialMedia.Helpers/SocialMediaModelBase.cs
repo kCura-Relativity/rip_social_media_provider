@@ -58,7 +58,7 @@ namespace SocialMedia.Helpers
         }
 
         public abstract IDataReader GetData(Dictionary<String, SocialMediaModelBase> inputFeed, IEnumerable<String> IDs);
-        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(IUtility utility, AccountInformation accountInfo, Int32 maxPosts);
+        public abstract Dictionary<String, SocialMediaModelBase> DownloadFeed(IHttpService httpService, AccountInformation accountInfo, Int32 maxPosts);
 
         protected virtual void RaiseError(String error, Exception ex)
         {

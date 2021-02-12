@@ -69,12 +69,18 @@
     <Compile Include="Attributes\IsIdentifier.cs" />
     <Compile Include="Attributes\MappedField.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Interfaces\IUtility.cs" />
+    <Compile Include="HttpService.cs" />
+    <Compile Include="Interfaces\IFeedRDOService.cs" />
+    <Compile Include="Interfaces\IHttpService.cs" />
+    <Compile Include="Interfaces\ISerializationHelper.cs" />
+    <Compile Include="Interfaces\ISocialMediaCustodianService.cs" />
     <Compile Include="Models\AccountInformation.cs" />
     <Compile Include="Models\JobConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializationHelper.cs" />
+    <Compile Include="SocialMediaCustodianService.cs" />
     <Compile Include="SocialMediaModelBase.cs" />
-    <Compile Include="Utility.cs" />
+    <Compile Include="FeedRdoService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -25,9 +25,12 @@ namespace SocialMedia.Provider.Tests
     [TestFixture]
     public class SocialMediaProviderTests2
     {
-        public Twitter.Twitter SampleTweet;
-        public Mock<IUtility> MockUtility;
-        public UtilityTestHelper UtilityTestHelper;
+        Twitter.Twitter SampleTweet;
+		Mock<IHttpService> MockHttpService = new Mock<IHttpService>();
+	    Mock<IFeedRDOService> MockRDOFeedService = new Mock<IFeedRDOService>();
+	    Mock<ISocialMediaCustodianService> MockSocialMediaCustodianService = new Mock<ISocialMediaCustodianService>();
+		Mock<ISerializationHelper> MockSerializationHelper;
+	    UtilityTestHelper UtilityTestHelper;
 
         Mock<IHelper> MockHelper;
         Mock<ILogFactory> MockLogFactory;
@@ -47,12 +50,14 @@ namespace SocialMedia.Provider.Tests
             MockServicesMgr = new Mock<IServicesMgr>();
             MockRsapiClient = new Mock<IRSAPIClient>();
             UtilityTestHelper = new UtilityTestHelper();
-            MockUtility = UtilityTestHelper.MockUtility;
-            SampleTweet = UtilityTestHelper.SampleTweet;
+	        MockHttpService = UtilityTestHelper.MockHttpService;
+			MockSerializationHelper = UtilityTestHelper.MockSerializationHelper;
+			SampleTweet = UtilityTestHelper.SampleTweet;
 
             MockLogFactory.Setup(x => x.GetLogger()).Returns(MockLogger.Object);
             MockHelper.Setup(x => x.GetLoggerFactory()).Returns(MockLogFactory.Object);
             MockServicesMgr.Setup(x => x.CreateProxy<IRSAPIClient>(It.IsAny<ExecutionIdentity>())).Returns(MockRsapiClient.Object);
+	        MockHelper.Setup(x => x.GetServicesManager()).Returns(MockServicesMgr.Object);
 
             SocialMediaCustodian = new RDO(12345)
             {
@@ -64,8 +69,8 @@ namespace SocialMedia.Provider.Tests
                 }
             };
 
-            MockUtility.Setup(x => x.GetSocialMediaCustodianAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(SocialMediaCustodian));
-            MockUtility.Setup(x => x.GetFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>())).Returns(() => Task.FromResult(ArchivedFeed));
+            MockSocialMediaCustodianService.Setup(x => x.GetSocialMediaCustodianAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>())).Returns(() => Task.FromResult(SocialMediaCustodian));
+	        MockRDOFeedService.Setup(x => x.GetFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>())).Returns(() => Task.FromResult(ArchivedFeed));
         }
 
         [TearDown]
@@ -80,8 +85,10 @@ namespace SocialMedia.Provider.Tests
             MockLogger.ResetCalls();
             MockServicesMgr.ResetCalls();
             MockRsapiClient.ResetCalls();
-            MockUtility.ResetCalls();
-        }
+	        MockRDOFeedService.ResetCalls();
+	        MockSocialMediaCustodianService.ResetCalls();
+	        MockSerializationHelper.ResetCalls();
+		}
 
 
         [Test]
@@ -90,7 +97,7 @@ namespace SocialMedia.Provider.Tests
             // Arrange
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
+                FeedRdoService = MockRDOFeedService.Object
             };
             var config = new JobConfiguration()
             {
@@ -118,8 +125,11 @@ namespace SocialMedia.Provider.Tests
             // Arrange
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+				FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+				SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+				SerializationHelper = MockSerializationHelper.Object
+			};
             ArchivedFeed = null;
             var config = new JobConfiguration()
             {
@@ -132,9 +142,9 @@ namespace SocialMedia.Provider.Tests
             // Act
             provider.GetBatchableIds(new FieldEntry() {FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID}, configString);
 
-            // Assert
-            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
-            MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
+			// Assert
+	        MockRDOFeedService.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once());
+	        MockRDOFeedService.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
         }
 
         [Test]
@@ -143,8 +153,11 @@ namespace SocialMedia.Provider.Tests
             // Arrange
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
             
             ArchivedFeed = new RDO(12345)
             {
@@ -166,9 +179,9 @@ namespace SocialMedia.Provider.Tests
             // Act
             provider.GetBatchableIds(new FieldEntry() { FieldIdentifier = SocialMedia.Twitter.Constants.FieldNames.ID }, configString);
 
-            // Assert
-            MockUtility.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
-            MockUtility.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once);
+			// Assert
+	        MockRDOFeedService.Verify(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()), Times.Never);
+	        MockRDOFeedService.Verify(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()), Times.Once);
         }
 
         [Test]
@@ -178,11 +191,14 @@ namespace SocialMedia.Provider.Tests
             String recordedSinceID = null;
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
             ArchivedFeed = null;
             Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("3") };
-            MockUtility.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
+	        MockHttpService.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
                 .Returns<HttpClient, HttpRequestMessage>((client, msg) =>
                 {
                     var retVal = UtilityTestHelper.GenerateBearerTokenResponse();
@@ -193,7 +209,7 @@ namespace SocialMedia.Provider.Tests
                     }
                     return Task.FromResult(retVal);
                 });
-            MockUtility.Setup(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()))
+	        MockRDOFeedService.Setup(x => x.CreateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<String>()))
             .Callback<IServicesMgr, Int32, Guid, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
             {
                 recordedSinceID = sinceID;
@@ -222,8 +238,11 @@ namespace SocialMedia.Provider.Tests
             String recordedSinceID = null;
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
             ArchivedFeed = new RDO(12345)
             {
                 Fields = new List<FieldValue>
@@ -234,7 +253,7 @@ namespace SocialMedia.Provider.Tests
                 }
             };
             Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5"), UtilityTestHelper.GenerateTweet("3") };
-            MockUtility.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
+	        MockHttpService.Setup(x => x.SendHttpRequestAsync(It.IsAny<HttpClient>(), It.IsAny<HttpRequestMessage>()))
                 .Returns<HttpClient, HttpRequestMessage>((client, msg) =>
                 {
                     var retVal = UtilityTestHelper.GenerateBearerTokenResponse();
@@ -245,7 +264,7 @@ namespace SocialMedia.Provider.Tests
                     }
                     return Task.FromResult(retVal);
                 });
-            MockUtility.Setup(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()))
+	        MockRDOFeedService.Setup(x => x.UpdateFeedRDOAsync(It.IsAny<IServicesMgr>(), It.IsAny<Int32>(), It.IsAny<Int32>(), It.IsAny<String>(), It.IsAny<String>()))
                 .Callback<IServicesMgr, Int32, Int32, String, String>((mgr, WorkspaceGroupID, JobID, Feed, sinceID) =>
                 {
                     recordedSinceID = sinceID;
@@ -274,8 +293,11 @@ namespace SocialMedia.Provider.Tests
             var archiveFeedSinceID = "12345678";
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
             ArchivedFeed = new RDO(12345)
             {
                 Fields = new List<FieldValue>
@@ -309,12 +331,15 @@ namespace SocialMedia.Provider.Tests
             // Arrange
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
             Twitter.Twitter[] tweets = new Twitter.Twitter[] { UtilityTestHelper.GenerateTweet("1"), UtilityTestHelper.GenerateTweet("5") };
             var testFeed = new Dictionary<String, SocialMediaModelBase> { {tweets[0].ID, tweets[0]} , { tweets[1].ID, tweets[1] } };
-            var utility = new Utility();
-            var testFeedString = utility.SerializeObjectAsync(testFeed);
+            var serializationHelper = new SerializationHelper();
+            var testFeedString = serializationHelper.SerializeObjectAsync(testFeed);
 
             ArchivedFeed = new RDO(12345)
             {
@@ -366,8 +391,11 @@ namespace SocialMedia.Provider.Tests
             // Arrange
             var provider = new SocialMediaProvider(MockHelper.Object)
             {
-                Utility = MockUtility.Object
-            };
+	            FeedRdoService = MockRDOFeedService.Object,
+	            HttpService = MockHttpService.Object,
+	            SocialMediaCustodianService = MockSocialMediaCustodianService.Object,
+	            SerializationHelper = MockSerializationHelper.Object
+			};
   
             var config = new JobConfiguration()
             {
